@@ -184,19 +184,19 @@
     }
 
     // ---- tunables ----
-    var DEPTH   = 4.2;    // perspective strength (higher = more convergence)
-    var SPREAD  = 1.5;    // near-row width as a multiple of canvas width
-    var GROUND  = 0.60;   // how far below the horizon the near row sits (frac of H)
-    var HORIZON = 0.16;   // vanishing height from the top (frac of H)
-    var AMP     = 0.16;   // wave height amplitude (frac of H)
-    var TILT    = 0.10;   // right-side up-sweep (frac of H)
-    var DRIFT   = 0.03;   // left -> right grid drift (units/sec)
-    var ROLL    = 0.9;    // wave roll speed
+    var DEPTH   = 2.4;    // perspective strength (higher = more convergence)
+    var SPREAD  = 1.4;    // near-row width as a multiple of canvas width
+    var GROUND  = 0.24;   // how far below the horizon the near row sits (frac of H)
+    var HORIZON = 0.36;   // vanishing height from the top (frac of H)
+    var AMP     = 0.22;   // wave height amplitude (frac of H)
+    var TILT    = 0.12;   // right-side up-sweep (frac of H)
+    var DRIFT   = 0.02;   // left -> right grid drift (units/sec) — calm
+    var ROLL    = 0.6;    // wave roll speed — calm
 
     var GX = 0, GZ = 0;
     function seed() {
       GX = Math.round(Math.min(Math.max(w / 8, 90), 170)); // columns across
-      GZ = 52;                                             // rows into depth
+      GZ = 34;                                             // rows into depth (ribbon)
     }
 
     function frac(n) { return n - Math.floor(n); }
