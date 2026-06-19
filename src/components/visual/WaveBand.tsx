@@ -3,13 +3,12 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Green "helix" wave band above the partner logo strip.
- *
- * Dots are placed around a twisting tube (a helix): the strands rotate around a
- * centerline that sweeps dramatically upward to the right. Points on the front
- * of the tube are brighter/larger than those on the back, giving a 3-D woven,
- * DNA-like ribbon that drifts right-to-left. Transparent, lightweight,
- * DPR-aware, and held static under prefers-reduced-motion.
+ * Green "ribbon" particle wave — a flat sheet of fine dots that twists along
+ * its length: broad and face-on (showing the dot grid) where it turns toward
+ * the viewer, pinching to a thin line where it turns edge-on. The centerline
+ * keeps a dramatic upward slope to the right and the whole thing drifts
+ * right-to-left. Transparent, lightweight, DPR-aware, static under
+ * prefers-reduced-motion. (Inspired by flowing particle-wave artwork.)
  */
 export function WaveBand({ className = "" }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -43,40 +42,48 @@ export function WaveBand({ className = "" }: { className?: string }) {
       ctx.clearRect(0, 0, w, h);
       if (!w || !h) return;
 
-      const t = time * 0.0006; // slow rotation; pattern drifts right → left
-      const turns = 3; // number of helix twists across the width (bigger loops)
-      const around = 22; // points around the tube (denser, finer dot field)
+      const t = time * 0.0005; // slow drift / twist, right → left
+      const twist = 2.6; // how many times the ribbon twists across the width
+      const rows = 24; // dots across the ribbon's width
       const step = w > 700 ? 5 : 9;
 
       for (let x = -10; x <= w; x += step) {
         const nx = x / w;
 
-        // Centerline: dramatic convex climb toward the right.
-        const centerY = h * 0.96 - Math.pow(nx, 2.4) * h * 0.98;
-        // Tube radius widens slightly toward the right.
-        const radius = h * 0.18 * (0.5 + nx * 0.85);
+        // Same dramatic upward slope to the right, plus a gentle undulation.
+        const centerY =
+          h * 0.96 -
+          Math.pow(nx, 2.4) * h * 0.98 +
+          Math.sin(nx * 4 + t * 1.2) * h * 0.05;
 
-        // Fade only at the extreme edges (off-screen), so the helix runs
-        // full-strength to — and past — the visible screen edges.
+        // Ribbon half-width, slightly larger toward the right.
+        const halfW = h * 0.2 * (0.55 + nx * 0.6);
+
+        // Twist angle along the length (+t animates the twist / drift).
+        const theta = nx * twist * TWO_PI + t;
+        const cosT = Math.cos(theta);
+        const sinT = Math.sin(theta);
+
+        // Fade only at the extreme edges (mostly off-screen).
         const edge = Math.min(1, Math.min(nx, 1 - nx) / 0.06);
         if (edge <= 0) continue;
 
-        for (let k = 0; k < around; k++) {
-          const v = k / around;
-          const angle = nx * turns * TWO_PI + v * TWO_PI + t;
+        for (let v = 0; v < rows; v++) {
+          const s = (v / (rows - 1)) * 2 - 1; // -1..1 across the ribbon
 
-          const y = centerY + Math.sin(angle) * radius;
+          // Flat ribbon: width projects vertically by cos(theta); the sin
+          // component is "depth" used only for brightness/size.
+          const y = centerY + s * halfW * cosT;
           if (y < -6 || y > h + 6) continue;
 
-          const depth = (Math.cos(angle) + 1) / 2; // 0 = back, 1 = front
+          const depth = (s * sinT + 1) / 2; // 0 = back, 1 = front
           const topFade = Math.min(1, Math.max(0, y / (h * 0.14)));
-          const alpha = edge * topFade * (0.14 + depth * 0.72);
+          const alpha = edge * topFade * (0.12 + depth * 0.72);
           if (alpha <= 0.02) continue;
 
           const g = Math.round(150 + depth * 95);
           const r = Math.round(28 + depth * 48);
-          // Small, fairly uniform dots → fine "digital" texture.
-          const size = 0.6 + depth * 0.85;
+          const size = 0.5 + depth * 1.0;
 
           ctx.beginPath();
           ctx.fillStyle = `rgba(${r}, ${g}, 78, ${alpha})`;
