@@ -884,69 +884,121 @@ a {
   color: var(--white);
 }
 
-/* ============ Timeline graphic ============ */
-.timeline-graphic {
-  margin-top: 3rem;
-  overflow-x: auto;
-  text-align: center;
-}
-.timeline-graphic img {
-  display: inline-block;
-  width: 100%;
-  min-width: 680px;
-  max-width: 1120px;
-  height: auto;
+/* ============ Our History — timeline + gallery ============ */
+.history-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.5fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: start;
+  margin-top: 2.5rem;
 }
 
-/* ============ Team photo wall ============ */
-.gallery-section {
-  padding-top: clamp(2.5rem, 5vw, 4rem);
-  padding-bottom: clamp(2.5rem, 5vw, 4rem);
+/* Vertical timeline (left) */
+.timeline2 {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0 0;
 }
-.photo-wall {
+.tl2-item {
+  position: relative;
+  padding: 0 0 2.6rem 2.4rem;
+}
+.tl2-item:last-child {
+  padding-bottom: 0;
+}
+.tl2-item::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 1.2rem;
+  bottom: -0.4rem;
+  width: 2px;
+  background: linear-gradient(180deg, var(--green), rgba(36, 198, 55, 0.2));
+}
+.tl2-item:last-child::after {
+  display: none;
+}
+.tl2-dot {
+  position: absolute;
+  left: 0;
+  top: 0.3rem;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 4px rgba(36, 198, 55, 0.14), 0 0 16px rgba(36, 198, 55, 0.7);
+}
+.tl2-year {
+  color: var(--green);
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+.tl2-title {
+  font-size: clamp(1.2rem, 1.6vw, 1.45rem);
+  line-height: 1.15;
+  margin: 0.15rem 0 0.5rem;
+}
+.tl2-desc {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-width: 44ch;
+}
+.tl2-badge {
+  display: inline-block;
+  margin-top: 0.9rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--green);
+  background: rgba(36, 198, 55, 0.1);
+  border: 1px solid var(--border-green);
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+}
+
+/* Scrolling photo gallery (right) */
+.history-gallery {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  height: clamp(440px, 66vh, 760px);
+  height: clamp(620px, 86vh, 1040px);
   overflow: hidden;
+  border-radius: 18px;
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent,
-    #000 11%,
-    #000 89%,
+    #000 5%,
+    #000 95%,
     transparent
   );
   mask-image: linear-gradient(
     to bottom,
     transparent,
-    #000 11%,
-    #000 89%,
+    #000 5%,
+    #000 95%,
     transparent
   );
 }
 .photo-col {
   display: flex;
   flex-direction: column;
-  animation: photoScroll 72s linear infinite;
+  animation: photoScroll 70s linear infinite;
   will-change: transform;
 }
 .photo-col.reverse {
   animation-direction: reverse;
 }
 .photo-col:nth-child(2) {
-  animation-duration: 88s;
-}
-.photo-col:nth-child(3) {
-  animation-duration: 64s;
-}
-.photo-wall:hover .photo-col {
-  animation-play-state: running;
+  animation-duration: 84s;
 }
 .photo-item {
   width: 100%;
   height: auto;
   display: block;
-  border-radius: 16px;
+  border-radius: 14px;
   border: 1px solid var(--card-border);
   margin-bottom: 1rem;
   background: var(--surface);
@@ -964,10 +1016,18 @@ a {
     animation: none;
   }
 }
+@media (max-width: 900px) {
+  .history-layout {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  .history-gallery {
+    height: clamp(460px, 80vh, 680px);
+  }
+}
 @media (max-width: 760px) {
-  .photo-wall {
+  .history-gallery {
     gap: 0.6rem;
-    height: clamp(360px, 72vh, 560px);
   }
   .photo-item {
     margin-bottom: 0.6rem;
