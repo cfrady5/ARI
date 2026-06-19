@@ -185,7 +185,7 @@
 
     // ---- tunables ----
     var DEPTH   = 2.4;    // perspective strength (higher = more convergence)
-    var SPREAD  = 1.4;    // near-row width as a multiple of canvas width
+    var SPREAD  = 1.6;    // near-row width as a multiple of canvas width (~14% larger)
     var GROUND  = 0.40;   // how far below the horizon the near row sits (frac of H) — thicker
     var HORIZON = 0.04;   // vanishing height from the top (frac of H) — moved up more
     var AMP     = 0.24;   // wave height amplitude (frac of H)
@@ -274,7 +274,7 @@
         if (al <= 0.02) continue;
         if (al > 1) al = 1;
         vsx[nv] = sx; vsy[nv] = sy; val[nv] = al;
-        vsz[nv] = (0.55 + persp * 2.31) * psz[i] * (0.7 + crest * 0.5); // dots +10%
+        vsz[nv] = (0.63 + persp * 2.63) * psz[i] * (0.7 + crest * 0.5); // dots scaled up
         vflag[nv] = (crest > 0.72 && persp > 0.4) ? 1 : 0;
         // only the brighter dots join the link grid (faint dust stays unlinked)
         if (al >= LINKMIN) {
