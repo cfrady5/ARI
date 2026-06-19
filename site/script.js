@@ -123,6 +123,44 @@
   var year = document.getElementById("year");
   if (year) year.textContent = new Date().getFullYear();
 
+  /* ---------- Logo rail (auto-scroll + arrow controls) ---------- */
+  var track = document.getElementById("logoTrack");
+  if (track) {
+    var offset = 0;
+    var speed = 0.5; // px per frame, leftward
+    var paused = false;
+    var half = 0;
+    var measure = function () {
+      half = track.scrollWidth / 2;
+    };
+    measure();
+    window.addEventListener("resize", measure);
+
+    if (!reduceMotion) {
+      track.style.animation = "none"; // JS drives it so arrows can nudge
+      var rail = track.closest(".logo-rail");
+      if (rail) {
+        rail.addEventListener("mouseenter", function () { paused = true; });
+        rail.addEventListener("mouseleave", function () { paused = false; });
+      }
+      document.querySelectorAll("[data-rail]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          offset += btn.dataset.rail === "next" ? -260 : 260;
+        });
+      });
+      var railLoop = function () {
+        if (!paused) offset -= speed;
+        if (half) {
+          if (offset <= -half) offset += half;
+          if (offset > 0) offset -= half;
+        }
+        track.style.transform = "translateX(" + offset + "px)";
+        requestAnimationFrame(railLoop);
+      };
+      requestAnimationFrame(railLoop);
+    }
+  }
+
   /* ---------- Hero green flowing-dot wave ---------- */
   var canvas = document.getElementById("heroWave");
   if (canvas && canvas.getContext) {
@@ -142,40 +180,46 @@
 
     var TWO_PI = Math.PI * 2;
 
+    // Dense flowing dot "terrain" filling the lower half of the hero:
+    // stacked contour strands warped by a shared wave height-field, brighter
+    // on the crests, sweeping up on the right, fading into black at the top.
     function draw(time) {
       ctx.clearRect(0, 0, w, h);
       if (!w || !h) return;
-      var t = time * 0.0005; // slow drift, right -> left
-      var rows = 16;
-      var step = w > 700 ? 5 : 9;
+      var t = time * 0.00022; // slow flow
+      var rows = w > 700 ? 34 : 22;
+      var step = w > 700 ? 8 : 13;
+      var top = h * 0.08; // terrain fills most of the wave strip
 
-      for (var x = -10; x <= w; x += step) {
-        var nx = x / w;
-        // Start low-left (below the headline), sweep up to the middle-right.
-        var centerY =
-          h * 0.86 -
-          Math.pow(nx, 1.25) * h * 0.4 +
-          Math.sin(nx * 9 + t) * h * 0.05 +
-          Math.sin(nx * 4 - t * 0.6) * h * 0.03;
-        var bandHalf = h * 0.1 * (0.8 + nx * 0.4);
-        var edge = Math.min(1, Math.min(nx, 1 - nx) / 0.05);
-        if (edge <= 0) continue;
+      for (var i = 0; i < rows; i++) {
+        var fz = i / (rows - 1); // 0 = back/top, 1 = front/bottom
+        var baseY = top + fz * (h - top);
+        var depth = 0.3 + fz * 0.7;
 
-        for (var v = 0; v < rows; v++) {
-          var s = v / (rows - 1) - 0.5;
-          var ripple = Math.sin(nx * 13 + v * 0.55 + t * 1.1) * h * 0.018;
-          var y = centerY + s * bandHalf * 2 + ripple;
-          if (y < -6 || y > h + 6) continue;
-          var vFade = 1 - Math.abs(s) * 1.7;
-          if (vFade <= 0) continue;
-          var bright = 0.45 + (0.5 - s) * 0.55;
-          var alpha = edge * vFade * (0.18 + bright * 0.5);
+        for (var x = -20; x <= w; x += step) {
+          var nx = x / w;
+          // Shared terrain height-field (flows over time).
+          var height =
+            Math.sin(nx * 4.2 - t * 1.2 + fz * 0.7) * 0.6 +
+            Math.sin(nx * 8.5 + t * 0.9 + fz * 0.5) * 0.32 +
+            Math.sin(nx * 2.0 + t * 0.5) * 0.5;
+          // Amplitude builds toward the right and toward the front.
+          var amp = (h * 0.045 + nx * nx * (h * 0.12)) * (0.45 + fz * 0.85);
+          var rise = -Math.pow(nx, 2.8) * h * 0.24; // up-sweep on the far right
+          var y = baseY - height * amp + rise;
+          if (y < top - 50 || y > h + 10) continue;
+
+          var crest = Math.max(0, Math.min(1, (height + 1.3) / 2.6));
+          var topFade = Math.min(1, Math.max(0, (y - (top - 20)) / (h * 0.14)));
+          var edge = Math.min(1, Math.min(nx, 1 - nx) / 0.03);
+          var alpha = depth * (0.22 + crest * 0.78) * topFade * edge;
           if (alpha <= 0.02) continue;
-          var g = Math.round(150 + bright * 95);
-          var r = Math.round(28 + bright * 45);
-          var size = 0.55 + bright * 0.65;
+
+          var g = Math.round(150 + crest * 105);
+          var r = Math.round(26 + crest * 44);
+          var size = 0.5 + depth * 1.0 + crest * 0.7;
           ctx.beginPath();
-          ctx.fillStyle = "rgba(" + r + ", " + g + ", 78, " + alpha + ")";
+          ctx.fillStyle = "rgba(" + r + ", " + g + ", 82, " + alpha + ")";
           ctx.arc(x, y, size, 0, TWO_PI);
           ctx.fill();
         }
