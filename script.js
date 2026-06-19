@@ -194,11 +194,16 @@
     var ROLL    = 0.6;    // wave roll speed — calm
 
     var BACKW = 0.82;   // far-edge width vs near (high = little convergence, no fan)
+    var LINKR = 22;     // link radius in px — connect dots closer than this
+    var LINKA = 0.16;   // link line opacity
+    var LINKMIN = 0.34; // only the brighter dots get linked (keeps it a constellation)
 
     // Free-flowing particle field: thousands of independent dots scattered
     // through depth (z) that together trace the wavy sheet — cohesive, but with
-    // no rows or strands, so nothing is anchored to a back line.
+    // no rows or strands, so nothing is anchored to a back line. Nearby dots are
+    // linked with thin green lines (via a spatial grid) into a loose constellation.
     var N = 0, px, pz, pph, psz, pspd;
+    var vsx, vsy, val, vsz, vflag, vlink, vnext, gridHead = null, gridLen = 0;
     function seed() {
       N = Math.round(Math.min(Math.max(w * 4.6, 2600), 6800));
       px = new Float32Array(N);    // 0..1 across
@@ -221,6 +226,9 @@
         px[j] = tmp[j].x; pz[j] = tmp[j].z; pph[j] = tmp[j].ph;
         psz[j] = tmp[j].sz; pspd[j] = tmp[j].spd;
       }
+      vsx = new Float32Array(N); vsy = new Float32Array(N);
+      val = new Float32Array(N); vsz = new Float32Array(N);
+      vflag = new Uint8Array(N); vlink = new Uint8Array(N); vnext = new Int32Array(N);
     }
 
     function frac(n) { return n - Math.floor(n); }
@@ -232,8 +240,16 @@
       var horizonY = h * HORIZON;
       var ground = h * GROUND;
       var amp = h * AMP;
-      var tilt = h * TILT;
-      var cur = -1;
+      var tilt2 = (h * TILT) * 2;
+      var R = LINKR;
+      var cols = ((w / R) | 0) + 2;
+      var rows = ((h / R) | 0) + 2;
+      var cells = cols * rows;
+      if (!gridHead || gridLen < cells) { gridHead = new Int32Array(cells); gridLen = cells; }
+      for (var c = 0; c < cells; c++) gridHead[c] = -1;
+
+      // ---- pass 1: positions (and bin into the spatial grid) ----
+      var nv = 0;
       for (var i = 0; i < N; i++) {
         var xp = px[i];
         var ex = edge(xp);
@@ -248,21 +264,67 @@
           Math.sin(xp * TWO_PI * 2.4 + pph[i] + t * 1.0) * 0.16;
         var xScale = SPREAD * (BACKW + (1 - BACKW) * persp);
         var sx = cx + (xp - 0.5) * w * xScale;
-        var sy = horizonY + ground * persp - wave * amp * persp - (xp - 0.5) * (tilt * 2) * persp;
+        var sy = horizonY + ground * persp - wave * amp * persp - (xp - 0.5) * tilt2 * persp;
         var crest = (wave + 1.4) / 2.8;
         if (crest < 0) crest = 0; else if (crest > 1) crest = 1;
         var tw = 0.82 + 0.18 * Math.sin(t * 1.7 + pph[i]);
         var al = (0.10 + persp * 0.45 + crest * 0.30) * ex * tw;
         if (al <= 0.02) continue;
         if (al > 1) al = 1;
-        var sz = (0.5 + persp * 2.1) * psz[i] * (0.7 + crest * 0.5);
-        ctx.globalAlpha = al;
-        var wantCrest = (crest > 0.72 && persp > 0.4) ? 1 : 0;
-        if (wantCrest !== cur) {
-          ctx.fillStyle = wantCrest ? "rgb(150,255,90)" : "rgb(52,200,66)";
-          cur = wantCrest;
+        vsx[nv] = sx; vsy[nv] = sy; val[nv] = al;
+        vsz[nv] = (0.5 + persp * 2.1) * psz[i] * (0.7 + crest * 0.5);
+        vflag[nv] = (crest > 0.72 && persp > 0.4) ? 1 : 0;
+        // only the brighter dots join the link grid (faint dust stays unlinked)
+        if (al >= LINKMIN) {
+          vlink[nv] = 1;
+          var gxi = (sx / R) | 0; if (gxi < 0) gxi = 0; else if (gxi >= cols) gxi = cols - 1;
+          var gyi = (sy / R) | 0; if (gyi < 0) gyi = 0; else if (gyi >= rows) gyi = rows - 1;
+          var cell = gyi * cols + gxi;
+          vnext[nv] = gridHead[cell]; gridHead[cell] = nv;
+        } else {
+          vlink[nv] = 0;
         }
-        ctx.fillRect(sx - sz * 0.5, sy - sz * 0.5, sz, sz);
+        nv++;
+      }
+
+      // ---- pass 2: thin links between nearby dots (one faint stroke) ----
+      var R2 = R * R;
+      ctx.globalAlpha = 1;
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgba(95,215,115," + LINKA + ")";
+      ctx.beginPath();
+      for (var k = 0; k < nv; k++) {
+        if (!vlink[k]) continue;
+        var xk = vsx[k], yk = vsy[k];
+        var gx = (xk / R) | 0; if (gx < 0) gx = 0; else if (gx >= cols) gx = cols - 1;
+        var gy = (yk / R) | 0; if (gy < 0) gy = 0; else if (gy >= rows) gy = rows - 1;
+        for (var oy = -1; oy <= 1; oy++) {
+          var ry = gy + oy; if (ry < 0 || ry >= rows) continue;
+          for (var ox = -1; ox <= 1; ox++) {
+            var rx = gx + ox; if (rx < 0 || rx >= cols) continue;
+            var jj = gridHead[ry * cols + rx];
+            while (jj !== -1) {
+              if (jj > k) {
+                var ddx = xk - vsx[jj], ddy = yk - vsy[jj];
+                if (ddx * ddx + ddy * ddy < R2) { ctx.moveTo(xk, yk); ctx.lineTo(vsx[jj], vsy[jj]); }
+              }
+              jj = vnext[jj];
+            }
+          }
+        }
+      }
+      ctx.stroke();
+
+      // ---- pass 3: dots on top ----
+      var cur = -1;
+      for (var m = 0; m < nv; m++) {
+        ctx.globalAlpha = val[m];
+        if (vflag[m] !== cur) {
+          ctx.fillStyle = vflag[m] ? "rgb(150,255,90)" : "rgb(52,200,66)";
+          cur = vflag[m];
+        }
+        var s = vsz[m];
+        ctx.fillRect(vsx[m] - s * 0.5, vsy[m] - s * 0.5, s, s);
       }
       ctx.globalAlpha = 1;
     }
