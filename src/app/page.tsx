@@ -47,9 +47,9 @@ export default function HomePage() {
           </div>
         </Container>
 
-        {/* Green wave band — drifts right→left and sweeps upward to the right
-            with an increasing slope, directly above the partner logo strip. */}
-        <div className="relative h-48 w-full sm:h-72">
+        {/* Green helix band — scaled up and bled past both screen edges
+            (section clips the overflow), directly above the partner logos. */}
+        <div className="relative -ml-[10%] h-[26rem] w-[120%] sm:h-[40rem]">
           <WaveBand />
         </div>
 

@@ -44,8 +44,8 @@ export function WaveBand({ className = "" }: { className?: string }) {
       if (!w || !h) return;
 
       const t = time * 0.0006; // slow rotation; pattern drifts right → left
-      const turns = 4; // number of helix twists across the width
-      const around = 16; // points around the tube circumference
+      const turns = 3; // number of helix twists across the width (bigger loops)
+      const around = 18; // points around the tube circumference
       const step = w > 700 ? 5 : 9;
 
       for (let x = -10; x <= w; x += step) {
@@ -54,10 +54,11 @@ export function WaveBand({ className = "" }: { className?: string }) {
         // Centerline: dramatic convex climb toward the right.
         const centerY = h * 0.96 - Math.pow(nx, 2.4) * h * 0.98;
         // Tube radius widens slightly toward the right.
-        const radius = h * 0.16 * (0.5 + nx * 0.85);
+        const radius = h * 0.18 * (0.5 + nx * 0.85);
 
-        // Fade in/out at the horizontal edges.
-        const edge = Math.min(1, Math.min(nx, 1 - nx) / 0.1);
+        // Fade only at the extreme edges (off-screen), so the helix runs
+        // full-strength to — and past — the visible screen edges.
+        const edge = Math.min(1, Math.min(nx, 1 - nx) / 0.06);
         if (edge <= 0) continue;
 
         for (let k = 0; k < around; k++) {
@@ -74,7 +75,7 @@ export function WaveBand({ className = "" }: { className?: string }) {
 
           const g = Math.round(150 + depth * 95);
           const r = Math.round(28 + depth * 48);
-          const size = 0.5 + depth * 1.5;
+          const size = 0.7 + depth * 2.0;
 
           ctx.beginPath();
           ctx.fillStyle = `rgba(${r}, ${g}, 78, ${alpha})`;
