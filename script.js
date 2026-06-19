@@ -193,18 +193,39 @@
     var DRIFT   = 0.02;   // left -> right grid drift (units/sec) — calm
     var ROLL    = 0.6;    // wave roll speed — calm
 
-    var GX = 0, GZ = 0, colPhase = null;
+    var BACKW = 0.82;   // far-edge width vs near (high = little convergence, no fan)
+
+    // Free-flowing particle field: thousands of independent dots scattered
+    // through depth (z) that together trace the wavy sheet — cohesive, but with
+    // no rows or strands, so nothing is anchored to a back line.
+    var N = 0, px, pz, pph, psz, pspd;
     function seed() {
-      GX = Math.round(Math.min(Math.max(w / 6, 120), 220)); // columns across (denser)
-      GZ = 62;                                              // rows into depth (thicker/denser)
-      colPhase = new Float32Array(GX);                     // per-strand phase (organic front edge)
-      for (var i = 0; i < GX; i++) colPhase[i] = Math.random() * TWO_PI;
+      N = Math.round(Math.min(Math.max(w * 4.6, 2600), 6800));
+      px = new Float32Array(N);    // 0..1 across
+      pz = new Float32Array(N);    // 0..1 depth (0 near .. 1 far)
+      pph = new Float32Array(N);   // twinkle / jitter phase
+      psz = new Float32Array(N);   // size multiplier
+      pspd = new Float32Array(N);  // per-dot flow speed
+      var tmp = [];
+      for (var i = 0; i < N; i++) {
+        tmp.push({
+          x: Math.random(),
+          z: Math.pow(Math.random(), 1.3),    // bias a little toward the front
+          ph: Math.random() * TWO_PI,
+          sz: 0.7 + Math.random() * 1.4,
+          spd: 0.6 + Math.random() * 0.9
+        });
+      }
+      tmp.sort(function (a, b) { return b.z - a.z; }); // far -> near draw order
+      for (var j = 0; j < N; j++) {
+        px[j] = tmp[j].x; pz[j] = tmp[j].z; pph[j] = tmp[j].ph;
+        psz[j] = tmp[j].sz; pspd[j] = tmp[j].spd;
+      }
     }
 
     function frac(n) { return n - Math.floor(n); }
     function edge(u) { return Math.min(1, u / 0.06) * Math.min(1, (1 - u) / 0.06); }
 
-    var drift = 0;
     function render(t) {
       ctx.clearRect(0, 0, w, h);
       var cx = w * 0.5;
@@ -213,45 +234,35 @@
       var amp = h * AMP;
       var tilt = h * TILT;
       var cur = -1;
-      // Draw far rows first so nearer rows layer on top.
-      for (var iz = GZ; iz >= 0; iz--) {
-        var z = iz / GZ;                       // 0 = near .. 1 = far
-        var persp = 1 / (1 + z * DEPTH);       // 1 near .. small far
-        var rowY = horizonY + ground * persp;
-        var sizeBase = 0.5 + persp * 2.1;
-        for (var ix = 0; ix < GX; ix++) {
-          var xp = frac(ix / GX + drift);      // 0..1 across, drifting right
-          var ex = edge(xp);
-          if (ex <= 0.01) continue;
-          // rolling wave height-field (a few sines crossing in x and z)
-          var wave =
-            Math.sin(xp * TWO_PI * 1.1 + z * 2.2 - t * ROLL) * 0.55 +
-            Math.sin(xp * TWO_PI * 0.5 - z * 1.4 + t * 0.55) * 0.55 +
-            Math.sin(z * TWO_PI * 0.7 + t * 0.70) * 0.30;
-          // extra organic flow concentrated on the near edge (fades with depth)
-          // so the closest row of dots isn't a rigid line.
-          var near = persp * persp;
-          wave += near * (
-            Math.sin(xp * TWO_PI * 2.7 + colPhase[ix] + t * 1.25) * 0.34 +
-            Math.sin(xp * TWO_PI * 4.3 - t * 0.95) * 0.18
-          );
-          var sx = cx + (xp - 0.5) * w * SPREAD * persp;
-          var sy = rowY - wave * amp * persp - (xp - 0.5) * (tilt * 2) * persp;
-          var crest = (wave + 1.4) / 2.8;
-          if (crest < 0) crest = 0; else if (crest > 1) crest = 1;
-          var tw = 0.82 + 0.18 * Math.sin(t * 1.8 + ix * 0.6 + iz * 0.9);
-          var al = (0.10 + persp * 0.45 + crest * 0.30) * ex * tw;
-          if (al <= 0.02) continue;
-          if (al > 1) al = 1;
-          var sz = sizeBase * (0.7 + crest * 0.6);
-          ctx.globalAlpha = al;
-          var wantCrest = (crest > 0.70 && persp > 0.4) ? 1 : 0;
-          if (wantCrest !== cur) {
-            ctx.fillStyle = wantCrest ? "rgb(150,255,90)" : "rgb(52,200,66)";
-            cur = wantCrest;
-          }
-          ctx.fillRect(sx - sz * 0.5, sy - sz * 0.5, sz, sz);
+      for (var i = 0; i < N; i++) {
+        var xp = px[i];
+        var ex = edge(xp);
+        if (ex <= 0.01) continue;
+        var z = pz[i];
+        var persp = 1 / (1 + z * DEPTH);
+        // coherent rolling wave + a little per-dot organic flow for life
+        var wave =
+          Math.sin(xp * TWO_PI * 1.1 + z * 2.2 - t * ROLL) * 0.55 +
+          Math.sin(xp * TWO_PI * 0.5 - z * 1.4 + t * 0.55) * 0.55 +
+          Math.sin(z * TWO_PI * 0.7 + t * 0.70) * 0.30 +
+          Math.sin(xp * TWO_PI * 2.4 + pph[i] + t * 1.0) * 0.16;
+        var xScale = SPREAD * (BACKW + (1 - BACKW) * persp);
+        var sx = cx + (xp - 0.5) * w * xScale;
+        var sy = horizonY + ground * persp - wave * amp * persp - (xp - 0.5) * (tilt * 2) * persp;
+        var crest = (wave + 1.4) / 2.8;
+        if (crest < 0) crest = 0; else if (crest > 1) crest = 1;
+        var tw = 0.82 + 0.18 * Math.sin(t * 1.7 + pph[i]);
+        var al = (0.10 + persp * 0.45 + crest * 0.30) * ex * tw;
+        if (al <= 0.02) continue;
+        if (al > 1) al = 1;
+        var sz = (0.5 + persp * 2.1) * psz[i] * (0.7 + crest * 0.5);
+        ctx.globalAlpha = al;
+        var wantCrest = (crest > 0.72 && persp > 0.4) ? 1 : 0;
+        if (wantCrest !== cur) {
+          ctx.fillStyle = wantCrest ? "rgb(150,255,90)" : "rgb(52,200,66)";
+          cur = wantCrest;
         }
+        ctx.fillRect(sx - sz * 0.5, sy - sz * 0.5, sz, sz);
       }
       ctx.globalAlpha = 1;
     }
@@ -260,7 +271,10 @@
     function loop(time) {
       var dt = last ? Math.min((time - last) / 1000, 0.05) : 0.016;
       last = time;
-      drift = frac(drift + dt * DRIFT);
+      for (var i = 0; i < N; i++) {
+        var nx = px[i] + dt * DRIFT * pspd[i];   // left -> right flow
+        px[i] = nx >= 1 ? nx - 1 : nx;
+      }
       render(time * 0.001);
       raf = requestAnimationFrame(loop);
     }
