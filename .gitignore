@@ -13,3 +13,7 @@ node_modules
 
 # stray build info
 *.tsbuildinfo
+
+# local dev helpers
+_*.cjs
+_*.mjs
