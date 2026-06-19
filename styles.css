@@ -1049,20 +1049,6 @@ a {
   line-height: 1.6;
   max-width: 44ch;
 }
-.tl2-badge {
-  display: inline-block;
-  margin-top: 0.9rem;
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--green);
-  background: rgba(36, 198, 55, 0.1);
-  border: 1px solid var(--border-green);
-  border-radius: 999px;
-  padding: 0.35rem 0.8rem;
-}
-
 /* Scrolling photo gallery (right) — stretches to the timeline height */
 .history-gallery {
   position: relative;
