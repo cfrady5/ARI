@@ -1,17 +1,17 @@
-# About page — team photo wall
+# About page — history photo wall
 
-These images feed the 3-column vertical scrolling photo wall above the
-Leadership section on the About page.
+These images feed the two-column vertical scrolling photo wall beside the
+"Our History" timeline on the About page.
 
 ## Current photos
 
-23 photos (`01.jpg`–`23.jpg`), shown at their **native aspect ratio** (no
-cropping) — landscape and portrait shots are mixed across the three columns.
-Each is auto-rotated for EXIF orientation and resized to ~820 px wide,
-optimized JPEG.
+18 photos (`ws-01.jpg`–`ws-18.jpg`), processed from the uploaded "Website
+Photos" set. Shown at their **native aspect ratio** (no cropping) — landscape
+and portrait shots are mixed across both columns. Each is auto-rotated for
+EXIF orientation and resized to fit ~760×960, optimized JPEG.
 
-The middle column scrolls the opposite direction; the wall keeps scrolling
-on hover. Each column duplicates its set for a seamless infinite loop.
+The second column scrolls the opposite direction; the wall keeps scrolling on
+hover. Each column duplicates its set for a seamless infinite loop.
 
 ## Adding or swapping photos
 
