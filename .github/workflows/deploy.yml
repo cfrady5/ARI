@@ -1,8 +1,9 @@
 name: Deploy to GitHub Pages
 
-# Publishes the static site in /site to GitHub Pages on every push to main.
-# Plain HTML/CSS/JS — no build step. All links are relative so it works at the
-# project subpath (/ARI/) and inside a Wix embed.
+# Publishes the static site to GitHub Pages on every push to main.
+# The site lives at the repo root (so "Deploy from a branch / root" also works);
+# this workflow assembles a clean copy and deploys it via the GitHub Actions
+# Pages source. Either Pages source setting will serve the site.
 
 on:
   push:
@@ -28,13 +29,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Assemble site (exclude repo internals)
+        run: |
+          mkdir -p _site
+          cp -r index.html styles.css script.js assets \
+                about accessibility contact events impact initiatives \
+                markets-capabilities press-insights privacy terms \
+                .nojekyll _site/
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload static site
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
