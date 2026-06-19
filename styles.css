@@ -889,7 +889,7 @@ a {
   display: grid;
   grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.5fr);
   gap: clamp(1.5rem, 4vw, 3.5rem);
-  align-items: start;
+  align-items: stretch;
   margin-top: 2.5rem;
 }
 
@@ -959,13 +959,11 @@ a {
   padding: 0.35rem 0.8rem;
 }
 
-/* Scrolling photo gallery (right) */
+/* Scrolling photo gallery (right) — stretches to the timeline height */
 .history-gallery {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  height: clamp(620px, 86vh, 1040px);
+  position: relative;
   overflow: hidden;
+  min-height: 560px;
   border-radius: 18px;
   -webkit-mask-image: linear-gradient(
     to bottom,
@@ -981,6 +979,13 @@ a {
     #000 95%,
     transparent
   );
+}
+.history-gallery-inner {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
 }
 .photo-col {
   display: flex;
@@ -1026,7 +1031,7 @@ a {
   }
 }
 @media (max-width: 760px) {
-  .history-gallery {
+  .history-gallery-inner {
     gap: 0.6rem;
   }
   .photo-item {
