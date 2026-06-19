@@ -28,7 +28,17 @@ export default function HomePage() {
     <>
       {/* 1. Hero */}
       <section className="relative isolate flex min-h-[92svh] flex-col overflow-hidden bg-black">
-        <Container className="relative flex flex-1 items-center pt-[calc(var(--header-height)+2rem)] pb-10">
+        {/* Digital-dot helix — positioned up near the headline and bleeding off
+            the right/top edges. A left→right black gradient keeps text crisp. */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+          <div className="absolute right-[-12%] top-[5%] h-[66%] w-[90%]">
+            <WaveBand />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black to-transparent" />
+        </div>
+
+        <Container className="relative z-10 flex flex-1 items-center pt-[calc(var(--header-height)+2rem)] pb-10">
           <div className="max-w-3xl">
             <h1 className="display-xl">
               Because the Warfighter
@@ -47,14 +57,8 @@ export default function HomePage() {
           </div>
         </Container>
 
-        {/* Green helix band — scaled up and bled past both screen edges
-            (section clips the overflow), directly above the partner logos. */}
-        <div className="relative -ml-[10%] h-[26rem] w-[120%] sm:h-[40rem]">
-          <WaveBand />
-        </div>
-
         {/* Auto-scrolling partner / trust strip pinned to the bottom */}
-        <div className="relative border-t border-white/10 bg-black/60 py-5 backdrop-blur-sm">
+        <div className="relative z-10 border-t border-white/10 bg-black/60 py-5 backdrop-blur-sm">
           <PartnerMarquee />
         </div>
       </section>

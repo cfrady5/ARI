@@ -45,7 +45,7 @@ export function WaveBand({ className = "" }: { className?: string }) {
 
       const t = time * 0.0006; // slow rotation; pattern drifts right → left
       const turns = 3; // number of helix twists across the width (bigger loops)
-      const around = 18; // points around the tube circumference
+      const around = 22; // points around the tube (denser, finer dot field)
       const step = w > 700 ? 5 : 9;
 
       for (let x = -10; x <= w; x += step) {
@@ -75,7 +75,8 @@ export function WaveBand({ className = "" }: { className?: string }) {
 
           const g = Math.round(150 + depth * 95);
           const r = Math.round(28 + depth * 48);
-          const size = 0.7 + depth * 2.0;
+          // Small, fairly uniform dots → fine "digital" texture.
+          const size = 0.6 + depth * 0.85;
 
           ctx.beginPath();
           ctx.fillStyle = `rgba(${r}, ${g}, 78, ${alpha})`;
