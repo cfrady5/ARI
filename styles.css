@@ -1373,7 +1373,7 @@ a {
   top: calc(var(--header-h) + 16px);
   z-index: 6;
   max-width: 720px;
-  margin-bottom: clamp(32px, 5vw, 56px);
+  margin-bottom: clamp(40px, 5vw, 64px);
   padding-bottom: 12px;
   background: #020402;
 }
@@ -1389,7 +1389,7 @@ a {
 }
 .ari-stack-card {
   position: sticky;
-  top: calc(var(--header-h) + 188px);
+  top: calc(var(--header-h) + 236px);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -1411,15 +1411,15 @@ a {
 }
 .ari-stack-card:nth-child(2) {
   z-index: 2;
-  top: calc(var(--header-h) + 200px);
+  top: calc(var(--header-h) + 248px);
 }
 .ari-stack-card:nth-child(3) {
   z-index: 3;
-  top: calc(var(--header-h) + 212px);
+  top: calc(var(--header-h) + 260px);
 }
 .ari-stack-card:nth-child(4) {
   z-index: 4;
-  top: calc(var(--header-h) + 224px);
+  top: calc(var(--header-h) + 272px);
 }
 
 /* ---- shared card interior (number, icon, motif, copy, wave) ---- */
