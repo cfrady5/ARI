@@ -3,10 +3,11 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Horizontal green "wave band" — flowing dotted strands that run across the
- * full width and drift right-to-left. Designed to sit directly above the
- * partner logo strip, parallel to the bottom of the hero. Transparent canvas,
- * lightweight, DPR-aware, and held static under prefers-reduced-motion.
+ * Green "wave band" above the partner logo strip.
+ * Dotted strands flow gently right-to-left and sweep upward to the right with
+ * a gradually increasing slope (flat at the left, steeper toward the right),
+ * echoing the hero reference. Transparent canvas, lightweight, DPR-aware, and
+ * held static under prefers-reduced-motion.
  */
 export function WaveBand({ className = "" }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -38,29 +39,36 @@ export function WaveBand({ className = "" }: { className?: string }) {
       ctx.clearRect(0, 0, w, h);
       if (!w || !h) return;
 
-      const t = time * 0.0007; // +t makes crests travel right → left
-      const strands = Math.max(7, Math.round(h / 9));
-      const gap = h / strands;
+      const t = time * 0.00018; // slow drift; +t moves crests right → left
+      const strands = Math.max(8, Math.round(h / 11));
       const step = w > 700 ? 5 : 9;
-      const amp = h * 0.2;
 
       for (let i = 0; i < strands; i++) {
-        const baseY = i * gap + gap * 0.5;
-        const sp = i * 0.28;
+        const frac = strands > 1 ? i / (strands - 1) : 0;
+        // Baselines sit in the lower band; the slope lifts them up-right.
+        const baseY = h * (0.6 + frac * 0.55);
+        const sp = i * 0.3;
 
         for (let x = -10; x <= w; x += step) {
           const nx = x / w;
 
-          const wave =
-            Math.sin(nx * 11 + t * 3 + sp) * amp +
-            Math.sin(nx * 24 + t * 2 + sp * 0.7) * amp * 0.35;
-          const y = baseY + wave * 0.55;
-          if (y < -4 || y > h + 4) continue;
+          // Gradually increasing upward slope toward the right.
+          const slope = -Math.pow(nx, 1.7) * h * 0.72;
 
-          // Soft fade at the left/right edges only.
-          const edge = Math.min(1, Math.min(nx, 1 - nx) / 0.1);
-          const crest = (Math.sin(nx * 11 + t * 3 + sp) + 1) / 2;
-          const alpha = edge * (0.22 + crest * 0.6);
+          // Undulation, slightly larger toward the right.
+          const amp = h * 0.05 * (0.5 + nx);
+          const wave =
+            Math.sin(nx * 7 + t * 2 + sp) * amp +
+            Math.sin(nx * 15 + t * 1.4 + sp * 0.6) * amp * 0.35;
+
+          const y = baseY + slope + wave;
+          if (y < -6 || y > h + 6) continue;
+
+          // Fade at left/right edges and softly near the top.
+          const edge = Math.min(1, Math.min(nx, 1 - nx) / 0.12);
+          const topFade = Math.min(1, y / (h * 0.18));
+          const crest = (Math.sin(nx * 7 + t * 2 + sp) + 1) / 2;
+          const alpha = edge * Math.max(0, topFade) * (0.22 + crest * 0.62);
           if (alpha <= 0.02) continue;
 
           const g = Math.round(150 + crest * 95);
@@ -68,7 +76,7 @@ export function WaveBand({ className = "" }: { className?: string }) {
 
           ctx.beginPath();
           ctx.fillStyle = `rgba(${r}, ${g}, 78, ${alpha})`;
-          ctx.arc(x, y, 0.55 + crest * 0.95, 0, Math.PI * 2);
+          ctx.arc(x, y, 0.55 + nx * 1.0, 0, Math.PI * 2);
           ctx.fill();
         }
       }
