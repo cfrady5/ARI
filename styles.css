@@ -879,6 +879,6 @@ a {
   .logo-item span { font-size: 0.95rem; }
 }
 
-/* The hero wave is drawn entirely on <canvas id="heroWave"> as a field of
-   green dots that flow left -> right through the wave silhouette (sampled from
-   assets/wave.png in script.js). See the "Hero green flowing-dot wave" block. */
+/* The hero wave is generated entirely in code on <canvas id="heroWave"> — a
+   field of green dots draped from a math height-field, flowing left -> right.
+   See the "Hero wave — fully generated green dot-flow" block in script.js. */

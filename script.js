@@ -161,11 +161,11 @@
     }
   }
 
-  /* ---------- Hero wave — green dots streaming through the wave shape ----------
-     The wave silhouette is sampled from assets/wave.png (so it keeps the exact
-     shape), then a field of green dots flows left -> right through that shape,
-     so the wave itself is made of moving particles. Falls back to a procedural
-     wave band if the image can't be read. */
+  /* ---------- Hero wave — fully generated green dot-flow ----------
+     No image. The ribbon (left crest -> mid trough -> right crest, sweeping up
+     to the right) is a math height-field; a field of green dots drapes from the
+     crest line, feathers out below, and streams left -> right while the surface
+     ripples — a living "digital flow". */
   var canvas = document.getElementById("heroWave");
   if (canvas && canvas.getContext) {
     var ctx = canvas.getContext("2d");
@@ -182,104 +182,89 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    // Per-column vertical band of the wave shape, normalized 0..1 of height.
-    var prof = null; // { top:Float32Array, bot:Float32Array, cols:int }
+    function clamp01(n) { return n < 0 ? 0 : n > 1 ? 1 : n; }
+    function gauss(u, c, s) { var d = (u - c) / s; return Math.exp(-d * d); }
+    // Where the ribbon exists across the width (fade in left, out right).
+    function edge(u) { return Math.min(1, u / 0.05) * Math.min(1, (1 - u) / 0.045); }
 
-    function buildProfileFromImage(img) {
-      try {
-        var oc = document.createElement("canvas");
-        var cols = Math.max(2, Math.floor(w));
-        var rows = Math.max(2, Math.floor(h));
-        oc.width = cols;
-        oc.height = rows;
-        var octx = oc.getContext("2d");
-        // Match the CSS "center / 100% auto": full width, proportional height,
-        // vertically centered.
-        var drawW = w;
-        var drawH = w * img.naturalHeight / img.naturalWidth;
-        octx.drawImage(img, 0, (h - drawH) / 2, drawW, drawH);
-        var data = octx.getImageData(0, 0, cols, rows).data;
-        var top = new Float32Array(cols), bot = new Float32Array(cols);
-        var has = false;
-        for (var x = 0; x < cols; x++) {
-          var t = -1, b = -1;
-          for (var y = 0; y < rows; y++) {
-            if (data[(y * cols + x) * 4 + 3] > 28) {
-              if (t < 0) t = y;
-              b = y;
-            }
-          }
-          if (t >= 0) { top[x] = t / rows; bot[x] = b / rows; has = true; }
-          else { top[x] = -1; bot[x] = -1; }
-        }
-        if (!has) return false;
-        prof = { top: top, bot: bot, cols: cols };
-        return true;
-      } catch (e) {
-        return false;
+    // Crest line (normalized y, 0 = top) — the recognizable wave shape, plus a
+    // travelling ripple so it undulates over time.
+    function topAt(u, t) {
+      var c = 0.50
+            - 0.20 * gauss(u, 0.27, 0.15)                       // left crest (up)
+            + 0.07 * gauss(u, 0.50, 0.12)                       // middle trough (down)
+            - 0.24 * gauss(u, 0.73, 0.17)                       // right crest (up)
+            - 0.13 * Math.pow(clamp01((u - 0.45) / 0.55), 1.7); // overall sweep up-right
+      c += 0.020 * Math.sin(u * 9.0 - t * 1.05)
+         + 0.012 * Math.sin(u * 16.0 + t * 0.70);               // living ripple
+      return c;
+    }
+    // Drape depth below the crest line (normalized).
+    function thickAt(u) {
+      var base = 0.15 + 0.13 * gauss(u, 0.30, 0.22) + 0.11 * gauss(u, 0.63, 0.20);
+      base *= 0.45 + 0.55 * edge(u);                            // taper the ends
+      return base < 0.03 ? 0.03 : base;
+    }
+
+    // Precomputed contour, refreshed each frame (cheap, drives all particles).
+    var SAMP = 220;
+    var topArr = new Float32Array(SAMP);
+    var thArr = new Float32Array(SAMP);
+    function buildContour(t) {
+      for (var i = 0; i < SAMP; i++) {
+        var u = i / (SAMP - 1);
+        topArr[i] = topAt(u, t);
+        thArr[i] = thickAt(u);
       }
     }
 
-    function buildProfileFallback() {
-      var cols = Math.max(2, Math.floor(w));
-      var top = new Float32Array(cols), bot = new Float32Array(cols);
-      for (var x = 0; x < cols; x++) {
-        var u = x / (cols - 1);
-        if (u < 0.04 || u > 0.99) { top[x] = -1; bot[x] = -1; continue; }
-        var rise = Math.pow(u, 2.3);                       // sweep up on the right
-        var center = 0.74 - rise * 0.56 + Math.sin(u * 6.0) * 0.04;
-        var thick = 0.18 + 0.16 * (1 - Math.abs(u - 0.5) * 1.2);
-        top[x] = Math.max(0, center - thick / 2);
-        bot[x] = Math.min(1, center + thick / 2);
-      }
-      prof = { top: top, bot: bot, cols: cols };
-    }
-
-    // Flowing dot field.
+    // Dot field.
     var COUNT = 0, particles = [];
     function seed() {
-      COUNT = Math.round(Math.min(Math.max(w * 0.95, 420), 1300));
+      COUNT = Math.round(Math.min(Math.max(w * 1.25, 520), 1600));
       particles = new Array(COUNT);
       for (var i = 0; i < COUNT; i++) {
         particles[i] = {
           u: Math.random(),
-          band: Math.random(),
-          speed: 0.5 + Math.random() * 1.0,
-          size: 0.7 + Math.random() * 1.7,
+          d: Math.pow(Math.random(), 1.5),     // depth in drape; biased to crest
+          speed: 0.55 + Math.random() * 1.05,
+          size: 0.6 + Math.random() * 1.5,
           bobAmp: 1 + Math.random() * 3,
-          bobSpd: 0.5 + Math.random() * 1.3,
+          bobSpd: 0.4 + Math.random() * 1.2,
           phase: Math.random() * TWO_PI,
-          alpha: 0.5 + Math.random() * 0.5
+          alpha: 0.45 + Math.random() * 0.55,
+          streak: Math.random() < 0.42,        // some dots are short vertical dashes
+          streakLen: 2 + Math.random() * 4
         };
       }
     }
 
-    function render(time) {
+    function render(t) {
       ctx.clearRect(0, 0, w, h);
-      if (!prof) return;
-      var cols = prof.cols, top = prof.top, bot = prof.bot;
       for (var i = 0; i < COUNT; i++) {
         var p = particles[i];
-        var c = Math.floor(p.u * (cols - 1));
-        var tN = top[c];
-        if (tN < 0) continue;                         // gap in the wave shape
-        var bN = bot[c];
+        var fi = p.u * (SAMP - 1);
+        var idx = fi | 0;
+        var top = topArr[idx], th = thArr[idx];
         var x = p.u * w;
-        var y = (tN + p.band * (bN - tN)) * h +
-                Math.sin(time * 0.001 * p.bobSpd + p.phase) * p.bobAmp;
-        // Fade in/out at the extreme edges so the wrap-around is seamless.
-        var edge = Math.min(1, p.u / 0.06) * Math.min(1, (1 - p.u) / 0.05);
-        var crest = 1 - p.band;                       // top of band = crest
-        var a = (0.30 + crest * 0.55) * p.alpha * edge;
+        var y = (top + p.d * th) * h +
+                Math.sin(t * p.bobSpd + p.phase) * p.bobAmp;
+        var pres = edge(p.u);
+        var crest = 1 - p.d;                                    // top = crest
+        var a = (0.20 + crest * 0.62) * p.alpha * pres;
         if (a <= 0.015) continue;
-        ctx.beginPath();
         ctx.fillStyle = "rgba(" +
-          Math.round(36 + crest * 100) + "," +
-          Math.round(198 + crest * 57) + "," +
-          Math.round(55 + crest * 35) + "," + a + ")";
-        ctx.arc(x, y, p.size + crest * 0.6, 0, TWO_PI);
-        ctx.fill();
-        if (crest > 0.85) {                           // bright lime crest glow
+          Math.round(40 + crest * 96) + "," +
+          Math.round(196 + crest * 59) + "," +
+          Math.round(58 + crest * 32) + "," + a + ")";
+        if (p.streak) {
+          ctx.fillRect(x - 0.55, y, 1.1, p.streakLen);
+        } else {
+          ctx.beginPath();
+          ctx.arc(x, y, p.size + crest * 0.5, 0, TWO_PI);
+          ctx.fill();
+        }
+        if (crest > 0.86) {                                     // bright crest glow
           ctx.beginPath();
           ctx.fillStyle = "rgba(150,255,90," + (a * 0.5) + ")";
           ctx.arc(x, y, (p.size + 0.6) * 2.0, 0, TWO_PI);
@@ -292,42 +277,32 @@
     function loop(time) {
       var dt = last ? Math.min((time - last) / 1000, 0.05) : 0.016;
       last = time;
+      var t = time * 0.001;
       for (var i = 0; i < COUNT; i++) {
         var p = particles[i];
-        p.u += dt * 0.12 * p.speed;                   // left -> right flow
+        p.u += dt * 0.11 * p.speed;                             // left -> right flow
         if (p.u >= 1) p.u -= 1;
       }
-      render(time);
+      buildContour(t);
+      render(t);
       raf = requestAnimationFrame(loop);
     }
 
     function start() {
       cancelAnimationFrame(raf);
       last = 0;
-      if (reduceMotion) render(0);
+      if (reduceMotion) { buildContour(0); render(0); }
       else raf = requestAnimationFrame(loop);
     }
 
-    var waveImg = new Image();
-    waveImg.crossOrigin = "anonymous";
-    function rebuild() {
-      resize();
-      if (!buildProfileFromImage(waveImg)) buildProfileFallback();
-      seed();
-    }
-    waveImg.onload = function () { rebuild(); start(); };
-    waveImg.onerror = function () {
-      resize();
-      buildProfileFallback();
-      seed();
-      start();
-    };
-    waveImg.src = "assets/wave.png";
+    resize();
+    seed();
+    start();
 
     var resizeTimer;
     window.addEventListener("resize", function () {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(function () { rebuild(); start(); }, 150);
+      resizeTimer = setTimeout(function () { resize(); seed(); start(); }, 150);
     });
   }
 })();
