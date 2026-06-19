@@ -461,6 +461,11 @@ a {
   opacity: 0.95;
   filter: brightness(0) invert(1);
 }
+/* RAM wordmark reads small at the shared cap — give it a larger ceiling. */
+.logo-item img[src*="ram.png"] {
+  max-height: 74px;
+  max-width: 300px;
+}
 .logo-item span {
   white-space: nowrap;
   font-size: 1.05rem;
@@ -889,6 +894,7 @@ a {
   .rail-arrow { display: none; }
   .logo-item { min-width: 220px; padding: 0 2rem; }
   .logo-item img { max-height: 44px; }
+  .logo-item img[src*="ram.png"] { max-height: 60px; }
   .logo-item span { font-size: 0.95rem; }
 }
 
