@@ -161,11 +161,12 @@
     }
   }
 
-  /* ---------- Hero wave — fully generated green dot-flow ----------
-     No image. The ribbon (left crest -> mid trough -> right crest, sweeping up
-     to the right) is a math height-field; a field of green dots drapes from the
-     crest line, feathers out below, and streams left -> right while the surface
-     ripples — a living "digital flow". */
+  /* ---------- Hero wave — 3-D perspective dot-lattice ----------
+     A flat grid of dots (GX across x GZ into depth) projected in perspective and
+     warped by a rolling wave height-field. Near rows are wide/bright, far rows
+     converge toward a vanishing line — so it reads as a cohesive sheet of dots
+     receding into the distance. The grid drifts left -> right and the wave rolls,
+     so the whole lattice flows. Tunables are grouped up top for easy tweaking. */
   var canvas = document.getElementById("heroWave");
   if (canvas && canvas.getContext) {
     var ctx = canvas.getContext("2d");
@@ -182,98 +183,65 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    function clamp01(n) { return n < 0 ? 0 : n > 1 ? 1 : n; }
-    function gauss(u, c, s) { var d = (u - c) / s; return Math.exp(-d * d); }
-    // Where the ribbon exists across the width (fade in left, out right).
-    function edge(u) { return Math.min(1, u / 0.05) * Math.min(1, (1 - u) / 0.045); }
+    // ---- tunables ----
+    var DEPTH   = 4.2;    // perspective strength (higher = more convergence)
+    var SPREAD  = 1.5;    // near-row width as a multiple of canvas width
+    var GROUND  = 0.60;   // how far below the horizon the near row sits (frac of H)
+    var HORIZON = 0.16;   // vanishing height from the top (frac of H)
+    var AMP     = 0.16;   // wave height amplitude (frac of H)
+    var TILT    = 0.10;   // right-side up-sweep (frac of H)
+    var DRIFT   = 0.03;   // left -> right grid drift (units/sec)
+    var ROLL    = 0.9;    // wave roll speed
 
-    // Crest line (normalized y, 0 = top) — the recognizable wave shape, plus a
-    // travelling ripple so it undulates over time.
-    function topAt(u, t) {
-      var c = 0.50
-            - 0.20 * gauss(u, 0.27, 0.15)                       // left crest (up)
-            + 0.07 * gauss(u, 0.50, 0.12)                       // middle trough (down)
-            - 0.24 * gauss(u, 0.73, 0.17)                       // right crest (up)
-            - 0.13 * Math.pow(clamp01((u - 0.45) / 0.55), 1.7); // overall sweep up-right
-      c += 0.020 * Math.sin(u * 9.0 - t * 1.05)
-         + 0.012 * Math.sin(u * 16.0 + t * 0.70);               // living ripple
-      return c;
-    }
-    // Drape depth below the crest line (normalized).
-    function thickAt(u) {
-      var base = 0.15 + 0.13 * gauss(u, 0.30, 0.22) + 0.11 * gauss(u, 0.63, 0.20);
-      base *= 0.45 + 0.55 * edge(u);                            // taper the ends
-      return base < 0.03 ? 0.03 : base;
-    }
-
-    // Precomputed contour, refreshed each frame (cheap, drives all particles).
-    var SAMP = 220;
-    var topArr = new Float32Array(SAMP);
-    var thArr = new Float32Array(SAMP);
-    function buildContour(t) {
-      for (var i = 0; i < SAMP; i++) {
-        var u = i / (SAMP - 1);
-        topArr[i] = topAt(u, t);
-        thArr[i] = thickAt(u);
-      }
-    }
-
-    // Dense dot LATTICE — a grid of points warped onto the wave surface so the
-    // dots read as one cohesive sheet (not random scatter). NX columns form the
-    // vertical "strands"; NY rows drape down from the crest line. The lattice
-    // scrolls right (columns wrap) and the surface ripples, so the whole wave of
-    // dots flows.
-    var NX = 0, NY = 0;
-    var jaArr, jbArr, szArr, twArr;        // fixed per-node jitter / size / twinkle
+    var GX = 0, GZ = 0;
     function seed() {
-      NX = Math.round(Math.min(Math.max(w / 5.5, 110), 260));  // strands
-      NY = 24;                                                  // drape rows
-      var N = NX * NY;
-      jaArr = new Float32Array(N);
-      jbArr = new Float32Array(N);
-      szArr = new Float32Array(N);
-      twArr = new Float32Array(N);
-      var colStep = 1 / NX;
-      for (var n = 0; n < N; n++) {
-        jaArr[n] = (Math.random() - 0.5) * colStep * 0.85;     // loosen the grid
-        jbArr[n] = (Math.random() - 0.5) * 0.05;
-        szArr[n] = 1.0 + Math.random() * 1.3;
-        twArr[n] = Math.random() * TWO_PI;
-      }
+      GX = Math.round(Math.min(Math.max(w / 8, 90), 170)); // columns across
+      GZ = 52;                                             // rows into depth
     }
 
     function frac(n) { return n - Math.floor(n); }
+    function edge(u) { return Math.min(1, u / 0.06) * Math.min(1, (1 - u) / 0.06); }
 
-    var scroll = 0;
+    var drift = 0;
     function render(t) {
       ctx.clearRect(0, 0, w, h);
-      var cur = -1;                                            // 0 = body, 1 = crest
-      for (var i = 0; i < NX; i++) {
-        var ca = i / NX + scroll;
-        for (var j = 0; j < NY; j++) {
-          var n = i * NY + j;
-          var a = frac(ca + jaArr[n]);
-          var pres = edge(a);
-          if (pres <= 0.01) continue;
-          var b = j / (NY - 1) + jbArr[n];
-          if (b < 0) b = 0; else if (b > 1) b = 1;
-          var idx = (a * (SAMP - 1)) | 0;
-          // gentle 3-D fold + ripple so the sheet looks woven and alive
-          var fold = 0.030 * Math.sin(a * TWO_PI * 1.6 - b * 1.3 - t * 1.1);
-          var x = a * w;
-          var y = (topArr[idx] + b * thArr[idx] + fold) * h;
-          var bright = 1 - b;                                  // crest brightest
-          var tw = 0.8 + 0.2 * Math.sin(t * 1.8 + twArr[n]);
-          var al = (0.16 + bright * 0.7) * pres * tw;
+      var cx = w * 0.5;
+      var horizonY = h * HORIZON;
+      var ground = h * GROUND;
+      var amp = h * AMP;
+      var tilt = h * TILT;
+      var cur = -1;
+      // Draw far rows first so nearer rows layer on top.
+      for (var iz = GZ; iz >= 0; iz--) {
+        var z = iz / GZ;                       // 0 = near .. 1 = far
+        var persp = 1 / (1 + z * DEPTH);       // 1 near .. small far
+        var rowY = horizonY + ground * persp;
+        var sizeBase = 0.5 + persp * 2.1;
+        for (var ix = 0; ix < GX; ix++) {
+          var xp = frac(ix / GX + drift);      // 0..1 across, drifting right
+          var ex = edge(xp);
+          if (ex <= 0.01) continue;
+          // rolling wave height-field (a few sines crossing in x and z)
+          var wave =
+            Math.sin(xp * TWO_PI * 1.1 + z * 2.2 - t * ROLL) * 0.55 +
+            Math.sin(xp * TWO_PI * 0.5 - z * 1.4 + t * 0.55) * 0.55 +
+            Math.sin(z * TWO_PI * 0.7 + t * 0.70) * 0.30;
+          var sx = cx + (xp - 0.5) * w * SPREAD * persp;
+          var sy = rowY - wave * amp * persp - (xp - 0.5) * (tilt * 2) * persp;
+          var crest = (wave + 1.4) / 2.8;
+          if (crest < 0) crest = 0; else if (crest > 1) crest = 1;
+          var tw = 0.82 + 0.18 * Math.sin(t * 1.8 + ix * 0.6 + iz * 0.9);
+          var al = (0.10 + persp * 0.45 + crest * 0.30) * ex * tw;
           if (al <= 0.02) continue;
-          var sz = szArr[n] * (0.7 + bright * 0.7);
+          if (al > 1) al = 1;
+          var sz = sizeBase * (0.7 + crest * 0.6);
           ctx.globalAlpha = al;
-          var wantCrest = bright > 0.72 ? 1 : 0;
+          var wantCrest = (crest > 0.70 && persp > 0.4) ? 1 : 0;
           if (wantCrest !== cur) {
-            ctx.fillStyle = wantCrest ? "rgb(150,255,90)" : "rgb(56,205,70)";
+            ctx.fillStyle = wantCrest ? "rgb(150,255,90)" : "rgb(52,200,66)";
             cur = wantCrest;
           }
-          ctx.fillRect(x - sz * 0.5, y - sz * 0.5, sz, sz * 1.5);
+          ctx.fillRect(sx - sz * 0.5, sy - sz * 0.5, sz, sz);
         }
       }
       ctx.globalAlpha = 1;
@@ -283,18 +251,15 @@
     function loop(time) {
       var dt = last ? Math.min((time - last) / 1000, 0.05) : 0.016;
       last = time;
-      var t = time * 0.001;
-      scroll += dt * 0.05;                                     // left -> right flow
-      if (scroll >= 1) scroll -= 1;
-      buildContour(t);
-      render(t);
+      drift = frac(drift + dt * DRIFT);
+      render(time * 0.001);
       raf = requestAnimationFrame(loop);
     }
 
     function start() {
       cancelAnimationFrame(raf);
       last = 0;
-      if (reduceMotion) { buildContour(0); render(0); }
+      if (reduceMotion) render(0);
       else raf = requestAnimationFrame(loop);
     }
 
