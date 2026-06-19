@@ -1369,13 +1369,14 @@ a {
 
 /* ---- Why ARI Works : base = plain stacked column (mobile / reduced-motion) ---- */
 .ari-difference-header {
-  max-width: 720px;
-  margin-bottom: clamp(28px, 5vw, 48px);
+  max-width: 940px;
+  margin: 0 auto clamp(28px, 5vw, 48px);
 }
 .ari-card-stack {
   display: grid;
   gap: 22px;
   max-width: 940px;
+  margin: 0 auto;
 }
 .ari-stack-card {
   position: relative;
