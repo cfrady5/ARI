@@ -50,14 +50,15 @@ export function WaveBand({ className = "" }: { className?: string }) {
       for (let x = -10; x <= w; x += step) {
         const nx = x / w;
 
-        // Same dramatic upward slope to the right, plus a gentle undulation.
+        // Horizontal undulating centerline (~2 humps), centered in the box —
+        // matches the flowing-ribbon reference (no steep slope).
         const centerY =
-          h * 0.96 -
-          Math.pow(nx, 2.4) * h * 0.98 +
-          Math.sin(nx * 4 + t * 1.2) * h * 0.05;
+          h * 0.5 +
+          Math.sin(nx * 13 + t) * h * 0.2 +
+          Math.sin(nx * 6.5 - t * 0.7) * h * 0.05;
 
-        // Ribbon half-width, slightly larger toward the right.
-        const halfW = h * 0.2 * (0.55 + nx * 0.6);
+        // Fairly uniform ribbon width.
+        const halfW = h * 0.2 * (0.85 + nx * 0.15);
 
         // Twist angle along the length (+t animates the twist / drift).
         const theta = nx * twist * TWO_PI + t;
@@ -77,8 +78,11 @@ export function WaveBand({ className = "" }: { className?: string }) {
           if (y < -6 || y > h + 6) continue;
 
           const depth = (s * sinT + 1) / 2; // 0 = back, 1 = front
-          const topFade = Math.min(1, Math.max(0, y / (h * 0.14)));
-          const alpha = edge * topFade * (0.12 + depth * 0.72);
+          // Fade near both the top and bottom of the band (centered ribbon).
+          const fade =
+            Math.min(1, Math.max(0, y / (h * 0.16))) *
+            Math.min(1, Math.max(0, (h - y) / (h * 0.16)));
+          const alpha = edge * fade * (0.12 + depth * 0.72);
           if (alpha <= 0.02) continue;
 
           const g = Math.round(150 + depth * 95);
