@@ -545,6 +545,90 @@ a {
   font-weight: 700;
   color: rgba(59, 174, 72, 0.5);
 }
+
+/* Initiative cards — logo-led, linking to each program */
+.init-logo {
+  display: flex;
+  align-items: center;
+  min-height: 50px;
+  margin-bottom: 1.1rem;
+}
+.init-logo img {
+  max-height: 44px;
+  max-width: 200px;
+  object-fit: contain;
+  opacity: 0.95;
+  filter: brightness(0) invert(1);
+}
+.init-logo--ari img {
+  max-height: 34px;
+  filter: none;
+}
+.init-card .init-visit {
+  margin-top: 1.25rem;
+}
+
+/* Featured initiative banner (RAM) */
+.ram-feature {
+  display: grid;
+  grid-template-columns: minmax(0, 300px) 1fr;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: center;
+  padding: clamp(1.75rem, 4vw, 2.75rem);
+  margin-bottom: clamp(2.5rem, 6vw, 4rem);
+  background: var(--surface);
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform 0.5s var(--reveal-ease),
+    border-color 0.5s var(--reveal-ease),
+    box-shadow 0.5s var(--reveal-ease);
+}
+.ram-feature:hover {
+  transform: translateY(-4px);
+  border-color: rgba(36, 198, 55, 0.45);
+  box-shadow: 0 24px 60px -28px rgba(36, 198, 55, 0.55);
+}
+.ram-feature-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ram-feature-logo img {
+  max-width: 240px;
+  max-height: 130px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+.ram-feature-eyebrow {
+  display: inline-block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ari-green);
+  margin-bottom: 0.6rem;
+}
+.ram-feature-body h3 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  margin: 0 0 0.75rem;
+}
+.ram-feature-body p {
+  color: var(--ari-muted);
+  margin: 0 0 1.25rem;
+  max-width: 60ch;
+}
+@media (max-width: 760px) {
+  .ram-feature {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+  .ram-feature-logo {
+    justify-content: flex-start;
+  }
+}
 .tag {
   align-self: flex-start;
   display: inline-flex;
