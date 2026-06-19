@@ -878,3 +878,48 @@ a {
   .logo-item img { max-height: 44px; }
   .logo-item span { font-size: 0.95rem; }
 }
+
+/* ============ Hero wave — exact image asset (animated) ============ */
+/* Activates automatically when site/assets/wave.png exists; until then the
+   canvas wave (below it) shows as a fallback. The PNG is set as the wave and
+   a bright pulse is masked to its shape so the path appears to flow. */
+.wave-img,
+.wave-sweep {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+.wave-wrap.has-img .wave-img,
+.wave-wrap.has-img .wave-sweep { opacity: 1; }
+.wave-wrap.has-img canvas { display: none; }
+
+.wave-img {
+  background: url("assets/wave.png") no-repeat center / 100% auto;
+  animation: waveDrift 24s ease-in-out infinite alternate;
+}
+.wave-sweep {
+  background: linear-gradient(
+    105deg,
+    rgba(150, 255, 90, 0) 38%,
+    rgba(150, 255, 90, 0.55) 50%,
+    rgba(150, 255, 90, 0) 62%
+  );
+  background-size: 220% 100%;
+  -webkit-mask: url("assets/wave.png") no-repeat center / 100% auto;
+  mask: url("assets/wave.png") no-repeat center / 100% auto;
+  mix-blend-mode: screen;
+  animation: waveSweep 7s linear infinite;
+}
+@keyframes waveDrift {
+  from { transform: translateX(0) scale(1.03); }
+  to { transform: translateX(-2.5%) scale(1.06); }
+}
+@keyframes waveSweep {
+  from { background-position: 130% 0; }
+  to { background-position: -30% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wave-img, .wave-sweep { animation: none; }
+}

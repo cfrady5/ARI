@@ -260,5 +260,17 @@
         if (reduceMotion) draw(0);
       }, 150);
     });
+
+    // If the exact wave artwork (assets/wave.png) is present, switch to the
+    // animated image and stop the canvas fallback.
+    var waveWrap = canvas.closest(".wave-wrap");
+    if (waveWrap) {
+      var probe = new Image();
+      probe.onload = function () {
+        waveWrap.classList.add("has-img");
+        cancelAnimationFrame(raf);
+      };
+      probe.src = "assets/wave.png";
+    }
   }
 })();
