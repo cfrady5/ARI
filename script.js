@@ -10,6 +10,8 @@
    data-stagger              on a wrapper: its revealable children cascade 90ms
    data-replay               re-run the reveal each time it re-enters view
    data-count-up data-value="25000" data-suffix="+"   animated number
+   data-card-stack           wrapper: .diff-card children become a sticky
+                             scroll-stacked deck (desktop + motion only)
    (legacy .reveal and .count keep working — .reveal == data-reveal="fade-up")
    ========================================================================= */
 (function () {
@@ -208,6 +210,85 @@
       var top = target.getBoundingClientRect().top + window.scrollY - offset;
       window.scrollTo({ top: top, behavior: reduceMotion ? "auto" : "smooth" });
       if (history.replaceState) history.replaceState(null, "", hash);
+    });
+  }
+
+  /* ---------- 8. Why ARI Works — sticky scroll-stacked card deck ----------
+     A tall scroll region holds a sticky stage; the cards are stacked in the
+     same spot and driven by scroll progress so each slides up and settles
+     over the previous one. Engages only on wide screens with motion allowed;
+     otherwise the cards fall back to the plain CSS static stack. */
+  function initCardStack() {
+    var stacks = document.querySelectorAll("[data-card-stack]");
+    if (!stacks.length) return;
+    var mq = window.matchMedia("(min-width: 761px)");
+
+    Array.prototype.forEach.call(stacks, function (stack) {
+      var cards = Array.prototype.slice.call(stack.querySelectorAll(".diff-card"));
+      if (!cards.length) return;
+      var n = cards.length;
+      var ticking = false;
+
+      function active() {
+        return mq.matches && !reduceMotion;
+      }
+      function clearCards() {
+        cards.forEach(function (c) {
+          c.style.transform = "";
+          c.style.opacity = "";
+          c.style.zIndex = "";
+          c.classList.remove("is-active");
+        });
+      }
+      function update() {
+        ticking = false;
+        if (!active()) {
+          clearCards();
+          return;
+        }
+        var rect = stack.getBoundingClientRect();
+        var dist = rect.height - window.innerHeight;
+        var p = dist > 0 ? -rect.top / dist : 0;
+        if (p < 0) p = 0;
+        else if (p > 1) p = 1;
+        var f = p * (n - 1);
+        var current = Math.round(f);
+        cards.forEach(function (card, i) {
+          var d = f - i;
+          var y, scale, opacity;
+          if (d <= 0) {
+            // upcoming card: waiting below, slides up into place
+            var t = d + 1;
+            if (t < 0) t = 0;
+            y = (1 - t) * 64;
+            opacity = t;
+            scale = 0.96 + 0.04 * t;
+          } else {
+            // covered card: recedes slightly behind the active one
+            var dd = d > 3 ? 3 : d;
+            y = -dd * 18;
+            scale = 1 - dd * 0.05;
+            opacity = 1 - d * 0.4;
+            if (opacity < 0) opacity = 0;
+          }
+          card.style.transform =
+            "translate3d(0," + y.toFixed(1) + "px,0) scale(" + scale.toFixed(3) + ")";
+          card.style.opacity = opacity.toFixed(3);
+          card.style.zIndex = String(i + 1);
+          card.classList.toggle("is-active", i === current);
+        });
+      }
+      function onScroll() {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      }
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll);
+      if (mq.addEventListener) mq.addEventListener("change", update);
+      else if (mq.addListener) mq.addListener(update);
+      update();
     });
   }
 
@@ -447,6 +528,7 @@
     initScrollReveal();
     initCountUp();
     initHeroWaveParallax();
+    initCardStack();
     initSmoothAnchors();
     initContactForm();
     initFooterYear();
