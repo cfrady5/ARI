@@ -8,7 +8,7 @@ import InitiativeCard from "@/components/content/InitiativeCard";
 import StatCard from "@/components/content/StatCard";
 import NewsletterSignup from "@/components/content/NewsletterSignup";
 import PartnerMarquee from "@/components/content/PartnerMarquee";
-import { HeroWaveField } from "@/components/visual/HeroWaveField";
+import { WaveBand } from "@/components/visual/WaveBand";
 import { IconBadge } from "@/components/visual/IconBadge";
 import { Icon } from "@/components/visual/Icon";
 import { WHAT_ARI_DOES } from "@/data/approach";
@@ -28,17 +28,7 @@ export default function HomePage() {
     <>
       {/* 1. Hero */}
       <section className="relative isolate flex min-h-[92svh] flex-col overflow-hidden bg-black">
-        {/* Flowing green wave field (right-weighted, bleeds off edges) */}
-        <div className="absolute inset-0" aria-hidden="true">
-          <div className="absolute inset-y-0 right-0 left-1/4 sm:left-1/3">
-            <HeroWaveField />
-          </div>
-          {/* Left-to-right black mask keeps the headline crisp on black */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black to-transparent" />
-        </div>
-
-        <Container className="relative flex flex-1 items-center pt-[calc(var(--header-height)+2rem)] pb-44">
+        <Container className="relative flex flex-1 items-center pt-[calc(var(--header-height)+2rem)] pb-10">
           <div className="max-w-3xl">
             <h1 className="display-xl">
               Because the Warfighter
@@ -56,6 +46,12 @@ export default function HomePage() {
             </div>
           </div>
         </Container>
+
+        {/* Horizontal green wave band — flows right→left, parallel to and
+            directly above the partner logo strip. */}
+        <div className="relative h-28 w-full sm:h-36">
+          <WaveBand />
+        </div>
 
         {/* Auto-scrolling partner / trust strip pinned to the bottom */}
         <div className="relative border-t border-white/10 bg-black/60 py-5 backdrop-blur-sm">

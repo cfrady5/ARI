@@ -3,11 +3,13 @@
 Drop the official ARI logo here to replace the typographic fallback used in
 the site header and footer.
 
-## Required file
+## Files used by the site
 
-- **`ari-logo-white.png`** — the all-white ARI lockup (transparent background).
-  Used on the dark header/footer. This is the file the `Logo` component looks
-  for. Recommended: at least 600px wide, transparent PNG (or SVG — see below).
+- **`ari-mark-white.png`** — white "ARI" mark (transparent bg). Used in the
+  header/footer next to the typographic "Applied Research Institute" wordmark.
+  This is the file the `Logo` component renders.
+- `ari-logo-full-color.png` / `ari-mark-color.png` — color (green/navy)
+  variants kept for light-background use; not used on the dark site.
 
 ## How to add it
 
