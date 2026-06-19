@@ -344,21 +344,23 @@ a {
 }
 .hero h1 .hero-line { display: block; }
 .hero h1 .accent { display: block; margin-top: 0.5rem; }
+/* The subtitle sits on one line and the CTA below it spans that same width. */
+.hero-actions { display: inline-block; }
 .hero-sub {
-  max-width: 33rem;
   margin-top: 2rem;
   font-size: clamp(1.05rem, 1.4vw, 1.45rem);
   line-height: 1.34;
   letter-spacing: -0.01em;
   color: var(--muted);
+  white-space: nowrap;
 }
 .hero-cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  margin-top: 2rem;
-  min-width: 16rem;
+  margin-top: 1.5rem;
+  width: 100%;
   padding: 0.95rem 1.6rem;
   border: 1.5px solid #ffffff;
   border-radius: 12px;
@@ -876,6 +878,8 @@ a {
   .brand-wordmark { font-size: 0.7rem; }
   .hero-inner { padding: clamp(2rem, 8vh, 4rem) 22px 13rem; }
   .hero h1 { font-size: clamp(2.75rem, 12vw, 4rem); }
+  .hero-actions { display: block; }
+  .hero-sub { white-space: normal; max-width: 33rem; }
   .hero-cta { width: 100%; max-width: 22rem; min-width: 0; }
   .wave-wrap { bottom: 120px; height: 260px; }
   .logo-rail {
