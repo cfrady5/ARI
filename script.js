@@ -192,6 +192,7 @@
     var TILT    = 0.12;   // right-side up-sweep (frac of H)
     var DRIFT   = 0.02;   // left -> right grid drift (units/sec) — calm
     var ROLL    = 0.6;    // wave roll speed — calm
+    var LIFT    = 0.07;   // shift the whole flow up (frac of H) — toward the copy/CTA
 
     var BACKW = 0.82;   // far-edge width vs near (high = little convergence, no fan)
     var LINKR = 14;     // link radius in px — shorter, cleaner connections
@@ -241,6 +242,7 @@
       var ground = h * GROUND;
       var amp = h * AMP;
       var tilt2 = (h * TILT) * 2;
+      var lift = h * LIFT;
       var R = LINKR;
       var cols = ((w / R) | 0) + 2;
       var rows = ((h / R) | 0) + 2;
@@ -264,7 +266,7 @@
           Math.sin(xp * TWO_PI * 2.4 + pph[i] + t * 1.0) * 0.16;
         var xScale = SPREAD * (BACKW + (1 - BACKW) * persp);
         var sx = cx + (xp - 0.5) * w * xScale;
-        var sy = horizonY + ground * persp - wave * amp * persp - (xp - 0.5) * tilt2 * persp;
+        var sy = horizonY + ground * persp - wave * amp * persp - (xp - 0.5) * tilt2 * persp - lift;
         var crest = (wave + 1.4) / 2.8;
         if (crest < 0) crest = 0; else if (crest > 1) crest = 1;
         var tw = 0.82 + 0.18 * Math.sin(t * 1.7 + pph[i]);
@@ -272,7 +274,7 @@
         if (al <= 0.02) continue;
         if (al > 1) al = 1;
         vsx[nv] = sx; vsy[nv] = sy; val[nv] = al;
-        vsz[nv] = (0.5 + persp * 2.1) * psz[i] * (0.7 + crest * 0.5);
+        vsz[nv] = (0.55 + persp * 2.31) * psz[i] * (0.7 + crest * 0.5); // dots +10%
         vflag[nv] = (crest > 0.72 && persp > 0.4) ? 1 : 0;
         // only the brighter dots join the link grid (faint dust stays unlinked)
         if (al >= LINKMIN) {

@@ -334,7 +334,7 @@ a {
   margin: 0 auto;
   padding: clamp(3rem, 9vh, 7rem) 24px 16rem;
 }
-.hero-copy { max-width: 50rem; }
+.hero-copy { max-width: 80rem; }
 .hero h1 {
   margin: 0;
   font-size: clamp(3.25rem, 6.4vw, 6rem);
@@ -342,6 +342,7 @@ a {
   line-height: 0.95;
   letter-spacing: -0.05em;
 }
+.hero h1 .hero-line { display: block; }
 .hero h1 .accent { display: block; margin-top: 0.5rem; }
 .hero-sub {
   max-width: 33rem;
