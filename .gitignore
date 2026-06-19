@@ -10,3 +10,6 @@ Thumbs.db
 # local tooling (not part of the static site)
 node_modules
 .vercel
+
+# stray build info
+*.tsbuildinfo
