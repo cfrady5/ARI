@@ -897,28 +897,28 @@ a {
 
 .wave-img {
   background: url("assets/wave.png") no-repeat center / 100% auto;
-  animation: waveDrift 24s ease-in-out infinite alternate;
+  animation: waveDrift 13s ease-in-out infinite alternate;
 }
 .wave-sweep {
   background: linear-gradient(
-    105deg,
-    rgba(150, 255, 90, 0) 38%,
-    rgba(150, 255, 90, 0.55) 50%,
-    rgba(150, 255, 90, 0) 62%
+    100deg,
+    rgba(150, 255, 90, 0) 22%,
+    rgba(150, 255, 90, 0.6) 50%,
+    rgba(150, 255, 90, 0) 78%
   );
-  background-size: 220% 100%;
+  background-size: 200% 100%;
   -webkit-mask: url("assets/wave.png") no-repeat center / 100% auto;
   mask: url("assets/wave.png") no-repeat center / 100% auto;
   mix-blend-mode: screen;
-  animation: waveSweep 7s linear infinite;
+  animation: waveSweep 3.6s linear infinite;
 }
 @keyframes waveDrift {
-  from { transform: translateX(0) scale(1.03); }
-  to { transform: translateX(-2.5%) scale(1.06); }
+  from { transform: translateX(-2%) scale(1.04); }
+  to { transform: translateX(2%) scale(1.06); }
 }
 @keyframes waveSweep {
-  from { background-position: 130% 0; }
-  to { background-position: -30% 0; }
+  from { background-position: 120% 0; }
+  to { background-position: -20% 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .wave-img, .wave-sweep { animation: none; }
