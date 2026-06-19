@@ -5,16 +5,16 @@ Leadership section on the About page.
 
 ## Current photos
 
-18 photos, processed to uniform **4:5** tiles (face-aware crop, ~800×1000,
-optimized JPEG). To change one, replace the file with the **same filename**:
+23 photos (`01.jpg`–`23.jpg`), shown at their **native aspect ratio** (no
+cropping) — landscape and portrait shots are mixed across the three columns.
+Each is auto-rotated for EXIF orientation and resized to ~820 px wide,
+optimized JPEG.
 
-- `01.jpg`–`06.jpg` → left column
-- `07.jpg`–`12.jpg` → middle column (scrolls the opposite direction)
-- `13.jpg`–`18.jpg` → right column
+The middle column scrolls the opposite direction; the wall keeps scrolling
+on hover. Each column duplicates its set for a seamless infinite loop.
 
 ## Adding or swapping photos
 
-Drop in a replacement with the same name, or send new originals and I'll crop
-and place them. Portrait photos work best (tiles crop to 4:5, subject
-centered). To change the total count, let me know and I'll rebalance the
-columns.
+Replace a file with the same name to swap that photo, or send new originals
+and I'll process and place them. If you change how many photos there are,
+let me know and I'll rebalance the columns and the orientation mix.

@@ -940,17 +940,16 @@ a {
   animation-duration: 64s;
 }
 .photo-wall:hover .photo-col {
-  animation-play-state: paused;
+  animation-play-state: running;
 }
 .photo-item {
   width: 100%;
-  aspect-ratio: 4 / 5;
-  object-fit: cover;
+  height: auto;
+  display: block;
   border-radius: 16px;
   border: 1px solid var(--card-border);
   margin-bottom: 1rem;
   background: var(--surface);
-  display: block;
 }
 @keyframes photoScroll {
   from {
