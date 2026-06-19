@@ -194,9 +194,9 @@
     var ROLL    = 0.6;    // wave roll speed — calm
 
     var BACKW = 0.82;   // far-edge width vs near (high = little convergence, no fan)
-    var LINKR = 22;     // link radius in px — connect dots closer than this
-    var LINKA = 0.16;   // link line opacity
-    var LINKMIN = 0.34; // only the brighter dots get linked (keeps it a constellation)
+    var LINKR = 14;     // link radius in px — shorter, cleaner connections
+    var LINKA = 0.08;   // link line opacity — subtle
+    var LINKMIN = 0.52; // only stronger dots connect (keeps it a sparse constellation)
 
     // Free-flowing particle field: thousands of independent dots scattered
     // through depth (z) that together trace the wavy sheet — cohesive, but with
