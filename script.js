@@ -193,38 +193,63 @@
     var DRIFT   = 0.02;   // left -> right grid drift (units/sec) — calm
     var ROLL    = 0.6;    // wave roll speed — calm
 
-    var BACKW = 0.82;   // far-edge width vs near (high = little convergence, no fan)
-
-    // Free-flowing particle field: thousands of independent dots scattered
-    // through depth (z) that together trace the wavy sheet — cohesive, but with
-    // no rows or strands, so nothing is anchored to a back line.
-    var N = 0, px, pz, pph, psz, pspd;
-    function seed() {
-      N = Math.round(Math.min(Math.max(w * 4.6, 2600), 6800));
-      px = new Float32Array(N);    // 0..1 across
-      pz = new Float32Array(N);    // 0..1 depth (0 near .. 1 far)
-      pph = new Float32Array(N);   // twinkle / jitter phase
-      psz = new Float32Array(N);   // size multiplier
-      pspd = new Float32Array(N);  // per-dot flow speed
-      var tmp = [];
-      for (var i = 0; i < N; i++) {
-        tmp.push({
-          x: Math.random(),
-          z: Math.pow(Math.random(), 1.3),    // bias a little toward the front
-          ph: Math.random() * TWO_PI,
-          sz: 0.7 + Math.random() * 1.4,
-          spd: 0.6 + Math.random() * 0.9
-        });
-      }
-      tmp.sort(function (a, b) { return b.z - a.z; }); // far -> near draw order
-      for (var j = 0; j < N; j++) {
-        px[j] = tmp[j].x; pz[j] = tmp[j].z; pph[j] = tmp[j].ph;
-        psz[j] = tmp[j].sz; pspd[j] = tmp[j].spd;
-      }
-    }
+    var BACKW   = 0.82;  // far-edge width vs near (high = little convergence, no fan)
+    var CONNECT = 0.13;  // node link distance as a fraction of width (x near-persp)
 
     function frac(n) { return n - Math.floor(n); }
     function edge(u) { return Math.min(1, u / 0.06) * Math.min(1, (1 - u) / 0.06); }
+
+    // Two layers: a dim free-flowing dust haze for richness, and a sparser set of
+    // brighter NODES linked by faint lines into a living network mesh. Both flow
+    // left -> right and ride the same wave surface, with depth + glow.
+    var NM = 0, mx, mz, mph, msz, mspd;         // mesh nodes
+    var msx, msy, mcr, mpr, mdp, msize;          // per-frame node screen data
+    var ND = 0, dx, dz, dph, dsz, dspd;          // dust
+
+    function makeField(n, frontBias) {
+      var a = {
+        x: new Float32Array(n), z: new Float32Array(n),
+        ph: new Float32Array(n), sz: new Float32Array(n), spd: new Float32Array(n)
+      };
+      var tmp = [];
+      for (var i = 0; i < n; i++) {
+        tmp.push({
+          x: Math.random(),
+          z: Math.pow(Math.random(), frontBias),
+          ph: Math.random() * TWO_PI,
+          sz: 0.7 + Math.random() * 1.3,
+          spd: 0.65 + Math.random() * 0.8
+        });
+      }
+      tmp.sort(function (p, q) { return q.z - p.z; });   // far -> near
+      for (var j = 0; j < n; j++) {
+        a.x[j] = tmp[j].x; a.z[j] = tmp[j].z; a.ph[j] = tmp[j].ph;
+        a.sz[j] = tmp[j].sz; a.spd[j] = tmp[j].spd;
+      }
+      return a;
+    }
+
+    function seed() {
+      NM = Math.round(Math.min(Math.max(w / 6.5, 130), 240));
+      ND = Math.round(Math.min(Math.max(w * 2.2, 1100), 3200));
+      var m = makeField(NM, 1.15);
+      mx = m.x; mz = m.z; mph = m.ph; msz = m.sz; mspd = m.spd;
+      msx = new Float32Array(NM); msy = new Float32Array(NM);
+      mcr = new Float32Array(NM); mpr = new Float32Array(NM);
+      mdp = new Float32Array(NM); msize = new Float32Array(NM);
+      var d = makeField(ND, 1.3);
+      dx = d.x; dz = d.z; dph = d.ph; dsz = d.sz; dspd = d.spd;
+    }
+
+    // Wave height at (xp, z) with time; ph adds a touch of per-dot life.
+    function waveAt(xp, z, t, ph) {
+      return (
+        Math.sin(xp * TWO_PI * 1.1 + z * 2.2 - t * ROLL) * 0.55 +
+        Math.sin(xp * TWO_PI * 0.5 - z * 1.4 + t * 0.55) * 0.55 +
+        Math.sin(z * TWO_PI * 0.7 + t * 0.70) * 0.30 +
+        Math.sin(xp * TWO_PI * 2.4 + ph + t * 1.0) * 0.14
+      );
+    }
 
     function render(t) {
       ctx.clearRect(0, 0, w, h);
@@ -232,37 +257,96 @@
       var horizonY = h * HORIZON;
       var ground = h * GROUND;
       var amp = h * AMP;
-      var tilt = h * TILT;
-      var cur = -1;
-      for (var i = 0; i < N; i++) {
-        var xp = px[i];
+      var tilt2 = h * TILT * 2;
+
+      // ---- dust haze (behind) ----
+      ctx.fillStyle = "rgb(46,150,62)";
+      for (var i = 0; i < ND; i++) {
+        var xp = dx[i];
         var ex = edge(xp);
         if (ex <= 0.01) continue;
-        var z = pz[i];
+        var z = dz[i];
         var persp = 1 / (1 + z * DEPTH);
-        // coherent rolling wave + a little per-dot organic flow for life
-        var wave =
-          Math.sin(xp * TWO_PI * 1.1 + z * 2.2 - t * ROLL) * 0.55 +
-          Math.sin(xp * TWO_PI * 0.5 - z * 1.4 + t * 0.55) * 0.55 +
-          Math.sin(z * TWO_PI * 0.7 + t * 0.70) * 0.30 +
-          Math.sin(xp * TWO_PI * 2.4 + pph[i] + t * 1.0) * 0.16;
-        var xScale = SPREAD * (BACKW + (1 - BACKW) * persp);
-        var sx = cx + (xp - 0.5) * w * xScale;
-        var sy = horizonY + ground * persp - wave * amp * persp - (xp - 0.5) * (tilt * 2) * persp;
-        var crest = (wave + 1.4) / 2.8;
-        if (crest < 0) crest = 0; else if (crest > 1) crest = 1;
-        var tw = 0.82 + 0.18 * Math.sin(t * 1.7 + pph[i]);
-        var al = (0.10 + persp * 0.45 + crest * 0.30) * ex * tw;
-        if (al <= 0.02) continue;
-        if (al > 1) al = 1;
-        var sz = (0.5 + persp * 2.1) * psz[i] * (0.7 + crest * 0.5);
+        var wv = waveAt(xp, z, t, dph[i]);
+        var xs = SPREAD * (BACKW + (1 - BACKW) * persp);
+        var sx = cx + (xp - 0.5) * w * xs;
+        var sy = horizonY + ground * persp - wv * amp * persp - (xp - 0.5) * tilt2 * persp;
+        var cr = (wv + 1.4) / 2.8; if (cr < 0) cr = 0; else if (cr > 1) cr = 1;
+        var al = (0.05 + persp * 0.22 + cr * 0.12) * ex;
+        if (al <= 0.015) continue;
+        var s = (0.4 + persp * 1.2) * dsz[i];
         ctx.globalAlpha = al;
-        var wantCrest = (crest > 0.72 && persp > 0.4) ? 1 : 0;
-        if (wantCrest !== cur) {
-          ctx.fillStyle = wantCrest ? "rgb(150,255,90)" : "rgb(52,200,66)";
-          cur = wantCrest;
+        ctx.fillRect(sx - s * 0.5, sy - s * 0.5, s, s);
+      }
+
+      // ---- mesh node positions ----
+      for (var k = 0; k < NM; k++) {
+        var xpk = mx[k];
+        var exk = edge(xpk);
+        mpr[k] = exk;
+        if (exk <= 0.01) continue;
+        var zk = mz[k];
+        var pk = 1 / (1 + zk * DEPTH);
+        var wvk = waveAt(xpk, zk, t, mph[k]);
+        var xsk = SPREAD * (BACKW + (1 - BACKW) * pk);
+        msx[k] = cx + (xpk - 0.5) * w * xsk;
+        msy[k] = horizonY + ground * pk - wvk * amp * pk - (xpk - 0.5) * tilt2 * pk;
+        var crk = (wvk + 1.4) / 2.8; if (crk < 0) crk = 0; else if (crk > 1) crk = 1;
+        mcr[k] = crk;
+        mdp[k] = pk;
+        msize[k] = (1.1 + pk * 2.3) * msz[k] * (0.85 + crk * 0.5);
+      }
+
+      // ---- links ----
+      ctx.lineWidth = 1;
+      var curS = -1;
+      for (var a1 = 0; a1 < NM; a1++) {
+        if (mpr[a1] <= 0.02) continue;
+        var ax = msx[a1], ay = msy[a1], ap = mdp[a1];
+        for (var b1 = a1 + 1; b1 < NM; b1++) {
+          if (mpr[b1] <= 0.02) continue;
+          var ddx = ax - msx[b1], ddy = ay - msy[b1];
+          var d2 = ddx * ddx + ddy * ddy;
+          var pp = (ap + mdp[b1]) * 0.5;
+          var maxD = CONNECT * w * pp;
+          if (d2 > maxD * maxD) continue;
+          var dist = Math.sqrt(d2);
+          var la = (1 - dist / maxD) * 0.30 * pp * Math.min(mpr[a1], mpr[b1]);
+          if (la <= 0.012) continue;
+          var wantL = (mcr[a1] + mcr[b1] > 1.5) ? 1 : 0;
+          if (wantL !== curS) {
+            ctx.strokeStyle = wantL ? "rgb(150,255,90)" : "rgb(70,200,95)";
+            curS = wantL;
+          }
+          ctx.globalAlpha = la;
+          ctx.beginPath();
+          ctx.moveTo(ax, ay);
+          ctx.lineTo(msx[b1], msy[b1]);
+          ctx.stroke();
         }
-        ctx.fillRect(sx - sz * 0.5, sy - sz * 0.5, sz, sz);
+      }
+
+      // ---- nodes + glow ----
+      var curF = -1;
+      for (var n2 = 0; n2 < NM; n2++) {
+        if (mpr[n2] <= 0.02) continue;
+        var p2 = mdp[n2], c2 = mcr[n2];
+        var aB = (0.22 + p2 * 0.5 + c2 * 0.3) * mpr[n2];
+        if (aB > 1) aB = 1;
+        var s2 = msize[n2];
+        var wantF = c2 > 0.7 ? 1 : 0;
+        if (wantF !== curF) {
+          ctx.fillStyle = wantF ? "rgb(150,255,90)" : "rgb(74,216,96)";
+          curF = wantF;
+        }
+        ctx.globalAlpha = aB * 0.22;                 // soft glow halo
+        ctx.beginPath();
+        ctx.arc(msx[n2], msy[n2], s2 * 2.8, 0, TWO_PI);
+        ctx.fill();
+        ctx.globalAlpha = aB;                        // core
+        ctx.beginPath();
+        ctx.arc(msx[n2], msy[n2], s2, 0, TWO_PI);
+        ctx.fill();
       }
       ctx.globalAlpha = 1;
     }
@@ -271,10 +355,8 @@
     function loop(time) {
       var dt = last ? Math.min((time - last) / 1000, 0.05) : 0.016;
       last = time;
-      for (var i = 0; i < N; i++) {
-        var nx = px[i] + dt * DRIFT * pspd[i];   // left -> right flow
-        px[i] = nx >= 1 ? nx - 1 : nx;
-      }
+      for (var i = 0; i < NM; i++) { var a = mx[i] + dt * DRIFT * mspd[i]; mx[i] = a >= 1 ? a - 1 : a; }
+      for (var j = 0; j < ND; j++) { var b = dx[j] + dt * DRIFT * dspd[j]; dx[j] = b >= 1 ? b - 1 : b; }
       render(time * 0.001);
       raf = requestAnimationFrame(loop);
     }
