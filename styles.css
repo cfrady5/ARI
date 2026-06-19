@@ -878,61 +878,16 @@ a {
   color: var(--white);
 }
 
-/* ============ Timeline ============ */
-.timeline {
-  list-style: none;
-  margin: 3.25rem 0 0;
-  padding: 0;
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  gap: 1.5rem;
-  position: relative;
+/* ============ Timeline graphic ============ */
+.timeline-graphic {
+  margin-top: 3rem;
+  display: flex;
+  justify-content: center;
 }
-.timeline::before {
-  content: "";
-  position: absolute;
-  left: 9px;
-  right: 9px;
-  top: 8px;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--green-soft) 12%,
-    var(--green) 50%,
-    var(--green-soft) 88%,
-    transparent
-  );
-}
-.timeline-item {
-  position: relative;
-  padding-top: 2.4rem;
-}
-.timeline-node {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 0 5px rgba(36, 198, 55, 0.16);
-}
-.timeline-year {
-  color: var(--green);
-  font-weight: 800;
-  font-size: 1.1rem;
-  letter-spacing: -0.01em;
-}
-.timeline-title {
-  font-size: 1.1rem;
-  margin: 0.35rem 0 0.45rem;
-}
-.timeline-desc {
-  color: var(--muted);
-  font-size: 0.92rem;
-  line-height: 1.55;
+.timeline-graphic img {
+  width: 100%;
+  max-width: 620px;
+  height: auto;
 }
 
 /* ============ Prose (legal) ============ */
@@ -966,39 +921,6 @@ a {
   .leader-grid-top,
   .leader-grid-bottom {
     grid-template-columns: 1fr;
-  }
-  .timeline {
-    grid-auto-flow: row;
-    grid-auto-columns: 1fr;
-    gap: 0;
-    padding-left: 2rem;
-  }
-  .timeline::before {
-    top: 0;
-    bottom: 0;
-    left: 8px;
-    right: auto;
-    width: 2px;
-    height: auto;
-    background: linear-gradient(
-      180deg,
-      transparent,
-      var(--green) 10%,
-      var(--green) 90%,
-      transparent
-    );
-  }
-  .timeline-item {
-    padding-top: 0;
-    padding-bottom: 1.9rem;
-  }
-  .timeline-item:last-child {
-    padding-bottom: 0;
-  }
-  .timeline-node {
-    top: 4px;
-    left: -2rem;
-    margin-left: -1px;
   }
   .footer-grid {
     grid-template-columns: 1fr;
