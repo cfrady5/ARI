@@ -20,8 +20,6 @@ site/
 ├── index.html                 # Home
 ├── about/                     # About
 ├── initiatives/               # Initiatives
-├── markets-capabilities/      # Markets & Capabilities
-├── impact/                    # Impact
 ├── press-insights/            # Press & Insights
 ├── events/                    # Events
 ├── contact/                   # Contact (form)
