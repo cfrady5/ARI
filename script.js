@@ -218,59 +218,65 @@
       }
     }
 
-    // Dot field.
-    var COUNT = 0, particles = [];
+    // Dense dot LATTICE — a grid of points warped onto the wave surface so the
+    // dots read as one cohesive sheet (not random scatter). NX columns form the
+    // vertical "strands"; NY rows drape down from the crest line. The lattice
+    // scrolls right (columns wrap) and the surface ripples, so the whole wave of
+    // dots flows.
+    var NX = 0, NY = 0;
+    var jaArr, jbArr, szArr, twArr;        // fixed per-node jitter / size / twinkle
     function seed() {
-      COUNT = Math.round(Math.min(Math.max(w * 1.25, 520), 1600));
-      particles = new Array(COUNT);
-      for (var i = 0; i < COUNT; i++) {
-        particles[i] = {
-          u: Math.random(),
-          d: Math.pow(Math.random(), 1.5),     // depth in drape; biased to crest
-          speed: 0.55 + Math.random() * 1.05,
-          size: 0.6 + Math.random() * 1.5,
-          bobAmp: 1 + Math.random() * 3,
-          bobSpd: 0.4 + Math.random() * 1.2,
-          phase: Math.random() * TWO_PI,
-          alpha: 0.45 + Math.random() * 0.55,
-          streak: Math.random() < 0.42,        // some dots are short vertical dashes
-          streakLen: 2 + Math.random() * 4
-        };
+      NX = Math.round(Math.min(Math.max(w / 5.5, 110), 260));  // strands
+      NY = 24;                                                  // drape rows
+      var N = NX * NY;
+      jaArr = new Float32Array(N);
+      jbArr = new Float32Array(N);
+      szArr = new Float32Array(N);
+      twArr = new Float32Array(N);
+      var colStep = 1 / NX;
+      for (var n = 0; n < N; n++) {
+        jaArr[n] = (Math.random() - 0.5) * colStep * 0.85;     // loosen the grid
+        jbArr[n] = (Math.random() - 0.5) * 0.05;
+        szArr[n] = 1.0 + Math.random() * 1.3;
+        twArr[n] = Math.random() * TWO_PI;
       }
     }
 
+    function frac(n) { return n - Math.floor(n); }
+
+    var scroll = 0;
     function render(t) {
       ctx.clearRect(0, 0, w, h);
-      for (var i = 0; i < COUNT; i++) {
-        var p = particles[i];
-        var fi = p.u * (SAMP - 1);
-        var idx = fi | 0;
-        var top = topArr[idx], th = thArr[idx];
-        var x = p.u * w;
-        var y = (top + p.d * th) * h +
-                Math.sin(t * p.bobSpd + p.phase) * p.bobAmp;
-        var pres = edge(p.u);
-        var crest = 1 - p.d;                                    // top = crest
-        var a = (0.20 + crest * 0.62) * p.alpha * pres;
-        if (a <= 0.015) continue;
-        ctx.fillStyle = "rgba(" +
-          Math.round(40 + crest * 96) + "," +
-          Math.round(196 + crest * 59) + "," +
-          Math.round(58 + crest * 32) + "," + a + ")";
-        if (p.streak) {
-          ctx.fillRect(x - 0.55, y, 1.1, p.streakLen);
-        } else {
-          ctx.beginPath();
-          ctx.arc(x, y, p.size + crest * 0.5, 0, TWO_PI);
-          ctx.fill();
-        }
-        if (crest > 0.86) {                                     // bright crest glow
-          ctx.beginPath();
-          ctx.fillStyle = "rgba(150,255,90," + (a * 0.5) + ")";
-          ctx.arc(x, y, (p.size + 0.6) * 2.0, 0, TWO_PI);
-          ctx.fill();
+      var cur = -1;                                            // 0 = body, 1 = crest
+      for (var i = 0; i < NX; i++) {
+        var ca = i / NX + scroll;
+        for (var j = 0; j < NY; j++) {
+          var n = i * NY + j;
+          var a = frac(ca + jaArr[n]);
+          var pres = edge(a);
+          if (pres <= 0.01) continue;
+          var b = j / (NY - 1) + jbArr[n];
+          if (b < 0) b = 0; else if (b > 1) b = 1;
+          var idx = (a * (SAMP - 1)) | 0;
+          // gentle 3-D fold + ripple so the sheet looks woven and alive
+          var fold = 0.030 * Math.sin(a * TWO_PI * 1.6 - b * 1.3 - t * 1.1);
+          var x = a * w;
+          var y = (topArr[idx] + b * thArr[idx] + fold) * h;
+          var bright = 1 - b;                                  // crest brightest
+          var tw = 0.8 + 0.2 * Math.sin(t * 1.8 + twArr[n]);
+          var al = (0.16 + bright * 0.7) * pres * tw;
+          if (al <= 0.02) continue;
+          var sz = szArr[n] * (0.7 + bright * 0.7);
+          ctx.globalAlpha = al;
+          var wantCrest = bright > 0.72 ? 1 : 0;
+          if (wantCrest !== cur) {
+            ctx.fillStyle = wantCrest ? "rgb(150,255,90)" : "rgb(56,205,70)";
+            cur = wantCrest;
+          }
+          ctx.fillRect(x - sz * 0.5, y - sz * 0.5, sz, sz * 1.5);
         }
       }
+      ctx.globalAlpha = 1;
     }
 
     var raf = 0, last = 0;
@@ -278,11 +284,8 @@
       var dt = last ? Math.min((time - last) / 1000, 0.05) : 0.016;
       last = time;
       var t = time * 0.001;
-      for (var i = 0; i < COUNT; i++) {
-        var p = particles[i];
-        p.u += dt * 0.11 * p.speed;                             // left -> right flow
-        if (p.u >= 1) p.u -= 1;
-      }
+      scroll += dt * 0.05;                                     // left -> right flow
+      if (scroll >= 1) scroll -= 1;
       buildContour(t);
       render(t);
       raf = requestAnimationFrame(loop);
