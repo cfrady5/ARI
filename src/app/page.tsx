@@ -49,7 +49,7 @@ export default function HomePage() {
 
         {/* Green wave band — drifts right→left and sweeps upward to the right
             with an increasing slope, directly above the partner logo strip. */}
-        <div className="relative h-40 w-full sm:h-56">
+        <div className="relative h-48 w-full sm:h-72">
           <WaveBand />
         </div>
 

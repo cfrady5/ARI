@@ -45,18 +45,19 @@ export function WaveBand({ className = "" }: { className?: string }) {
 
       for (let i = 0; i < strands; i++) {
         const frac = strands > 1 ? i / (strands - 1) : 0;
-        // Baselines sit in the lower band; the slope lifts them up-right.
-        const baseY = h * (0.6 + frac * 0.55);
+        // Baselines sit low so there is room for a dramatic climb to the right.
+        const baseY = h * (0.78 + frac * 0.5);
         const sp = i * 0.3;
 
         for (let x = -10; x <= w; x += step) {
           const nx = x / w;
 
-          // Gradually increasing upward slope toward the right.
-          const slope = -Math.pow(nx, 1.7) * h * 0.72;
+          // Dramatic, curved upward sweep: nearly flat at the left, then a
+          // steep convex climb toward the right (higher exponent = more curve).
+          const slope = -Math.pow(nx, 2.6) * h * 1.15;
 
           // Undulation, slightly larger toward the right.
-          const amp = h * 0.05 * (0.5 + nx);
+          const amp = h * 0.045 * (0.4 + nx);
           const wave =
             Math.sin(nx * 7 + t * 2 + sp) * amp +
             Math.sin(nx * 15 + t * 1.4 + sp * 0.6) * amp * 0.35;
