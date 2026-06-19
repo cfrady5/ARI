@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../styles.css?v=33" />
+  <link rel="stylesheet" href="../styles.css?v=34" />
 </head>
 <body>
   <header class="site-header" id="siteHeader">
@@ -50,7 +50,7 @@
       <div class="container">
         <p class="section-label reveal">Our History</p>
         <div class="history-layout">
-          <ol class="timeline2 reveal">
+          <ol class="timeline2" data-reveal="slide-right" data-delay="80">
             <li class="tl2-item"><span class="tl2-dot"></span><p class="tl2-year">2015</p><h3 class="tl2-title">Lilly Endowment Grant</h3><p class="tl2-desc">ARI&rsquo;s early foundation began with support from Lilly Endowment Inc.</p><span class="tl2-badge">Foundation</span></li>
             <li class="tl2-item"><span class="tl2-dot"></span><p class="tl2-year">2017</p><h3 class="tl2-title">ARI Formally Incorporated</h3><p class="tl2-desc">ARI was formally incorporated and assembled its leadership team and board.</p><span class="tl2-badge">Incorporation</span></li>
             <li class="tl2-item"><span class="tl2-dot"></span><p class="tl2-year">2018</p><h3 class="tl2-title">Rebranded and Connected to Key Institutions</h3><p class="tl2-desc">ARI rebranded back to IN3 and strengthened connections with Indiana University, Purdue University, the University of Notre Dame, and NSWC Crane.</p><span class="tl2-badge">Institutional Alignment</span></li>
@@ -61,7 +61,7 @@
             <li class="tl2-item"><span class="tl2-dot"></span><p class="tl2-year">2025</p><h3 class="tl2-title">Andrew Appointed CEO</h3><p class="tl2-desc">Andrew Kossack was appointed CEO of ARI.</p><span class="tl2-badge">Leadership</span></li>
             <li class="tl2-item"><span class="tl2-dot"></span><p class="tl2-year">2027</p><h3 class="tl2-title">Heartland BioWorks Headquarters</h3><p class="tl2-desc">ARI plans to open the new Heartland BioWorks headquarters.</p><span class="tl2-badge">Future Growth</span></li>
           </ol>
-          <div class="history-gallery reveal" aria-hidden="true">
+          <div class="history-gallery" data-reveal="slide-left" data-delay="160" aria-hidden="true">
             <div class="history-gallery-inner">
               <div class="photo-col">
                 <img class="photo-item" src="../assets/gallery/01.jpg" alt="" decoding="async" />
@@ -126,7 +126,7 @@
         <h2 class="reveal">Experienced <span class="accent">Leaders.</span> Proven <span class="accent">Results.</span></h2>
         <p class="section-body reveal" style="margin-top:1rem">Our leadership team brings deep expertise in mission execution, partnerships, finance, and innovation &mdash; driving ARI&rsquo;s vision forward with integrity and impact.</p>
 
-        <div class="leader-grid leader-grid-top" style="margin-top:2.75rem">
+        <div data-stagger class="leader-grid leader-grid-top" style="margin-top:2.75rem">
           <article class="leader-card reveal">
             <div class="leader-photo">
               <img src="../assets/team/AK.png" alt="Andrew Kossack" />
@@ -153,7 +153,7 @@
           </article>
         </div>
 
-        <div class="leader-grid leader-grid-bottom" style="margin-top:1.5rem">
+        <div data-stagger class="leader-grid leader-grid-bottom" style="margin-top:1.5rem">
           <article class="leader-card reveal">
             <div class="leader-photo">
               <img src="../assets/team/BG.png" alt="Benjamin Griffin" />
@@ -219,6 +219,6 @@
     </div>
     <div class="footer-bottom"><div class="footer-bottom-inner"><p>&copy; <span id="year"></span> Applied Research Institute. All rights reserved.</p><div class="footer-legal"><a href="../privacy/">Privacy</a><a href="../terms/">Terms</a><a href="../accessibility/">Accessibility</a></div></div></div>
   </footer>
-  <script src="../script.js?v=33"></script>
+  <script src="../script.js?v=34"></script>
 </body>
 </html>

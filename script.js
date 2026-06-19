@@ -1,124 +1,221 @@
-/* Applied Research Institute — shared site interactions (vanilla JS). */
+/* =========================================================================
+   Applied Research Institute — shared site interactions (vanilla JS).
+   Premium motion system: reveal-on-scroll, staggered grids, count-up,
+   glass header, hero-wave parallax, smooth anchors. No dependencies.
+
+   Public markup API
+   -----------------
+   data-reveal="fade-up|fade|slide-left|slide-right|scale"  (bare = fade-up)
+   data-delay="120"          explicit reveal delay in ms (overrides stagger)
+   data-stagger              on a wrapper: its revealable children cascade 90ms
+   data-replay               re-run the reveal each time it re-enters view
+   data-count-up data-value="25000" data-suffix="+"   animated number
+   (legacy .reveal and .count keep working — .reveal == data-reveal="fade-up")
+   ========================================================================= */
 (function () {
   "use strict";
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var supportsIO = "IntersectionObserver" in window;
+  var STAGGER_STEP = 90; // ms between staggered siblings
+  var STAGGER_MAX = 8; // cap so long lists don't lag far behind
 
-  /* ---------- Sticky header background on scroll ---------- */
-  var header = document.getElementById("siteHeader");
-  if (header) {
+  /* ---------- 1. Glass header on scroll ---------- */
+  function initHeaderScroll() {
+    var header = document.getElementById("siteHeader");
+    if (!header) return;
     var onScroll = function () {
-      header.classList.toggle("scrolled", window.scrollY > 24);
+      var scrolled = window.scrollY > 12;
+      header.classList.toggle("is-scrolled", scrolled);
+      header.classList.toggle("scrolled", scrolled); // legacy hook
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
   }
 
-  /* ---------- Mobile menu ---------- */
-  var menuToggle = document.getElementById("menuToggle");
-  var mainNav = document.getElementById("mainNav");
-  if (menuToggle && mainNav) {
-    menuToggle.addEventListener("click", function () {
-      var open = mainNav.classList.toggle("open");
-      menuToggle.setAttribute("aria-expanded", String(open));
+  /* ---------- 2. Mobile nav ---------- */
+  function initMobileNav() {
+    var toggle = document.getElementById("menuToggle");
+    var nav = document.getElementById("mainNav");
+    if (!toggle || !nav) return;
+    toggle.addEventListener("click", function () {
+      var open = nav.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", String(open));
     });
-    mainNav.addEventListener("click", function (e) {
+    nav.addEventListener("click", function (e) {
       if (e.target.tagName === "A") {
-        mainNav.classList.remove("open");
-        menuToggle.setAttribute("aria-expanded", "false");
+        nav.classList.remove("open");
+        toggle.setAttribute("aria-expanded", "false");
       }
     });
   }
 
-  /* ---------- Scroll reveal ---------- */
-  var reveals = document.querySelectorAll(".reveal");
-  if (reduceMotion || !("IntersectionObserver" in window)) {
-    reveals.forEach(function (el) {
-      el.classList.add("visible");
+  /* ---------- 3 + 4. Scroll reveal & staggered grids ---------- */
+  function reveal(el) {
+    el.classList.add("is-visible");
+    if (el.classList.contains("reveal")) el.classList.add("visible"); // legacy CSS
+  }
+  function unreveal(el) {
+    el.classList.remove("is-visible", "visible");
+  }
+  function assignDelays(els) {
+    // a) explicit data-stagger groups
+    document.querySelectorAll("[data-stagger]").forEach(function (group) {
+      var kids = group.querySelectorAll(":scope > [data-reveal], :scope > .reveal");
+      Array.prototype.forEach.call(kids, function (kid, i) {
+        if (!kid.hasAttribute("data-delay")) {
+          kid.style.setProperty("--reveal-delay", Math.min(i, STAGGER_MAX) * STAGGER_STEP + "ms");
+        }
+      });
     });
-  } else {
-    // Stagger elements that reveal together (e.g. cards in a grid, or a
-    // heading + body) so each section cascades in instead of popping at once.
-    var revealGroups = {};
-    var groupKey = 0;
+    // b) explicit data-delay, then c) implicit "same parent" cascade
     var lastParent = null;
-    reveals.forEach(function (el) {
+    var idx = 0;
+    els.forEach(function (el) {
+      if (el.hasAttribute("data-delay")) {
+        el.style.setProperty("--reveal-delay", (parseInt(el.dataset.delay, 10) || 0) + "ms");
+        return;
+      }
+      if (el.style.getPropertyValue("--reveal-delay")) return; // set by data-stagger
+      if (el.closest("[data-stagger]")) return;
       if (el.parentElement !== lastParent) {
         lastParent = el.parentElement;
-        groupKey++;
-        revealGroups[groupKey] = 0;
+        idx = 0;
       }
-      var i = revealGroups[groupKey];
-      el.style.setProperty("--reveal-delay", Math.min(i, 6) * 90 + "ms");
-      revealGroups[groupKey] = i + 1;
+      el.style.setProperty("--reveal-delay", Math.min(idx, 6) * STAGGER_STEP + "ms");
+      idx++;
     });
-    var revealObs = new IntersectionObserver(
+  }
+  function initScrollReveal() {
+    var els = Array.prototype.slice.call(
+      document.querySelectorAll(".reveal, [data-reveal]")
+    );
+    if (!els.length) return;
+    assignDelays(els);
+
+    if (reduceMotion || !supportsIO) {
+      els.forEach(reveal);
+      return;
+    }
+    var obs = new IntersectionObserver(
       function (entries) {
         entries.forEach(function (entry) {
+          var el = entry.target;
           if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
-            revealObs.unobserve(entry.target);
+            reveal(el);
+            if (!el.hasAttribute("data-replay")) obs.unobserve(el);
+          } else if (el.hasAttribute("data-replay")) {
+            unreveal(el);
           }
         });
       },
       { threshold: 0.12, rootMargin: "0px 0px -6% 0px" }
     );
-    reveals.forEach(function (el) {
-      revealObs.observe(el);
+    els.forEach(function (el) {
+      obs.observe(el);
     });
   }
 
-  /* ---------- Metric count-up ---------- */
-  function formatCount(el, value) {
+  /* ---------- 5. Count-up stats ---------- */
+  function withCommas(s) {
+    var parts = String(s).split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");
+  }
+  function renderCount(el, value) {
     var prefix = el.dataset.prefix || "";
     var suffix = el.dataset.suffix || "";
     var decimals = parseInt(el.dataset.decimals, 10) || 0;
-    el.textContent = prefix + value.toFixed(decimals) + suffix;
+    el.textContent = prefix + withCommas(value.toFixed(decimals)) + suffix;
   }
   function animateCount(el) {
-    var target = parseFloat(el.dataset.target);
-    if (reduceMotion || !target) {
-      formatCount(el, target || 0);
+    var target = parseFloat(el.dataset.value != null ? el.dataset.value : el.dataset.target);
+    if (isNaN(target)) return;
+    if (reduceMotion) {
+      renderCount(el, target);
       return;
     }
     var duration = 1500;
     var start = performance.now();
-    function tick(now) {
+    (function tick(now) {
       var p = Math.min((now - start) / duration, 1);
-      var eased = 1 - Math.pow(1 - p, 3);
-      formatCount(el, target * eased);
+      renderCount(el, target * (1 - Math.pow(1 - p, 3))); // easeOutCubic
       if (p < 1) requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
+    })(performance.now());
   }
-  var counts = document.querySelectorAll(".count");
-  if (counts.length) {
-    if (!("IntersectionObserver" in window)) {
-      counts.forEach(function (el) {
-        formatCount(el, parseFloat(el.dataset.target) || 0);
+  function initCountUp() {
+    var els = document.querySelectorAll(".count, [data-count-up]");
+    if (!els.length) return;
+    if (!supportsIO) {
+      Array.prototype.forEach.call(els, function (el) {
+        renderCount(el, parseFloat(el.dataset.value != null ? el.dataset.value : el.dataset.target) || 0);
       });
-    } else {
-      var countObs = new IntersectionObserver(
-        function (entries) {
-          entries.forEach(function (entry) {
-            if (entry.isIntersecting) {
-              animateCount(entry.target);
-              countObs.unobserve(entry.target);
-            }
-          });
-        },
-        { threshold: 0.5 }
-      );
-      counts.forEach(function (el) {
-        countObs.observe(el);
-      });
+      return;
     }
+    var obs = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            animateCount(entry.target);
+            obs.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+    Array.prototype.forEach.call(els, function (el) {
+      obs.observe(el);
+    });
+  }
+
+  /* ---------- 6. Hero green-wave parallax ---------- */
+  function initHeroWaveParallax() {
+    var wave = document.querySelector(".wave-wrap");
+    if (!wave || reduceMotion) return;
+    var ticking = false;
+    function update() {
+      ticking = false;
+      var p = Math.min((window.scrollY || 0) / 400, 1);
+      wave.style.transform =
+        "translate3d(0," + (-60 * p).toFixed(1) + "px,0) scale(" + (1 + 0.03 * p).toFixed(3) + ")";
+      wave.style.opacity = (1 - 0.5 * p).toFixed(3);
+    }
+    window.addEventListener(
+      "scroll",
+      function () {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true }
+    );
+    update();
+  }
+
+  /* ---------- 7. Smooth in-page anchors (header-aware) ---------- */
+  function initSmoothAnchors() {
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest && e.target.closest('a[href^="#"]');
+      if (!a) return;
+      var hash = a.getAttribute("href");
+      if (!hash || hash === "#" || hash.length < 2) return;
+      var target = document.getElementById(decodeURIComponent(hash.slice(1)));
+      if (!target) return;
+      e.preventDefault();
+      var header = document.getElementById("siteHeader");
+      var offset = (header ? header.offsetHeight : 0) + 12;
+      var top = target.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top: top, behavior: reduceMotion ? "auto" : "smooth" });
+      if (history.replaceState) history.replaceState(null, "", hash);
+    });
   }
 
   /* ---------- Contact form (client-side confirmation) ---------- */
-  var form = document.getElementById("contactForm");
-  var confirmation = document.getElementById("formConfirmation");
-  if (form && confirmation) {
+  function initContactForm() {
+    var form = document.getElementById("contactForm");
+    var confirmation = document.getElementById("formConfirmation");
+    if (!form || !confirmation) return;
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       if (!form.reportValidity()) return;
@@ -135,12 +232,15 @@
   }
 
   /* ---------- Footer year ---------- */
-  var year = document.getElementById("year");
-  if (year) year.textContent = new Date().getFullYear();
+  function initFooterYear() {
+    var year = document.getElementById("year");
+    if (year) year.textContent = new Date().getFullYear();
+  }
 
   /* ---------- Logo rail (auto-scroll + arrow controls) ---------- */
-  var track = document.getElementById("logoTrack");
-  if (track) {
+  function initLogoRail() {
+    var track = document.getElementById("logoTrack");
+    if (!track) return;
     var offset = 0;
     var speed = 0.5; // px per frame, leftward
     var paused = false;
@@ -150,40 +250,38 @@
     };
     measure();
     window.addEventListener("resize", measure);
+    if (reduceMotion) return;
 
-    if (!reduceMotion) {
-      track.style.animation = "none"; // JS drives it so arrows can nudge
-      var rail = track.closest(".logo-rail");
-      if (rail) {
-        rail.addEventListener("mouseenter", function () { paused = true; });
-        rail.addEventListener("mouseleave", function () { paused = false; });
-      }
-      document.querySelectorAll("[data-rail]").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-          offset += btn.dataset.rail === "next" ? -260 : 260;
-        });
-      });
-      var railLoop = function () {
-        if (!paused) offset -= speed;
-        if (half) {
-          if (offset <= -half) offset += half;
-          if (offset > 0) offset -= half;
-        }
-        track.style.transform = "translateX(" + offset + "px)";
-        requestAnimationFrame(railLoop);
-      };
-      requestAnimationFrame(railLoop);
+    track.style.animation = "none"; // JS drives it so arrows can nudge
+    var rail = track.closest(".logo-rail");
+    if (rail) {
+      rail.addEventListener("mouseenter", function () { paused = true; });
+      rail.addEventListener("mouseleave", function () { paused = false; });
     }
+    document.querySelectorAll("[data-rail]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        offset += btn.dataset.rail === "next" ? -260 : 260;
+      });
+    });
+    (function railLoop() {
+      if (!paused) offset -= speed;
+      if (half) {
+        if (offset <= -half) offset += half;
+        if (offset > 0) offset -= half;
+      }
+      track.style.transform = "translateX(" + offset + "px)";
+      requestAnimationFrame(railLoop);
+    })();
   }
 
   /* ---------- Hero wave — 3-D perspective dot-lattice ----------
-     A flat grid of dots (GX across x GZ into depth) projected in perspective and
-     warped by a rolling wave height-field. Near rows are wide/bright, far rows
-     converge toward a vanishing line — so it reads as a cohesive sheet of dots
-     receding into the distance. The grid drifts left -> right and the wave rolls,
-     so the whole lattice flows. Tunables are grouped up top for easy tweaking. */
-  var canvas = document.getElementById("heroWave");
-  if (canvas && canvas.getContext) {
+     A free-flowing field of green dots warped by a rolling wave height-field,
+     drawn in perspective so it reads as a cohesive sheet receding into the
+     distance. Nearby dots are linked with thin green lines via a spatial grid.
+     Tunables are grouped up top. */
+  function initHeroWave() {
+    var canvas = document.getElementById("heroWave");
+    if (!canvas || !canvas.getContext) return;
     var ctx = canvas.getContext("2d");
     var w = 0, h = 0;
     var TWO_PI = Math.PI * 2;
@@ -199,45 +297,27 @@
     }
 
     // ---- tunables ----
-    var DEPTH   = 2.4;    // perspective strength (higher = more convergence)
-    var SPREAD  = 1.6;    // near-row width as a multiple of canvas width (~14% larger)
-    var GROUND  = 0.40;   // how far below the horizon the near row sits (frac of H) — thicker
-    var HORIZON = 0.04;   // vanishing height from the top (frac of H) — moved up more
-    var AMP     = 0.24;   // wave height amplitude (frac of H)
-    var TILT    = 0.12;   // right-side up-sweep (frac of H)
-    var DRIFT   = 0.02;   // left -> right grid drift (units/sec) — calm
-    var ROLL    = 0.6;    // wave roll speed — calm
-    var LIFT    = 0;      // vertical flow offset (frac of H); 0 keeps it below the CTA
+    var DEPTH = 2.4, SPREAD = 1.6, GROUND = 0.40, HORIZON = 0.04, AMP = 0.24,
+      TILT = 0.12, DRIFT = 0.02, ROLL = 0.6, LIFT = 0;
+    var BACKW = 0.82, LINKR = 14, LINKA = 0.08, LINKMIN = 0.52;
 
-    var BACKW = 0.82;   // far-edge width vs near (high = little convergence, no fan)
-    var LINKR = 14;     // link radius in px — shorter, cleaner connections
-    var LINKA = 0.08;   // link line opacity — subtle
-    var LINKMIN = 0.52; // only stronger dots connect (keeps it a sparse constellation)
-
-    // Free-flowing particle field: thousands of independent dots scattered
-    // through depth (z) that together trace the wavy sheet — cohesive, but with
-    // no rows or strands, so nothing is anchored to a back line. Nearby dots are
-    // linked with thin green lines (via a spatial grid) into a loose constellation.
     var N = 0, px, pz, pph, psz, pspd;
     var vsx, vsy, val, vsz, vflag, vlink, vnext, gridHead = null, gridLen = 0;
     function seed() {
       N = Math.round(Math.min(Math.max(w * 4.6, 2600), 6800));
-      px = new Float32Array(N);    // 0..1 across
-      pz = new Float32Array(N);    // 0..1 depth (0 near .. 1 far)
-      pph = new Float32Array(N);   // twinkle / jitter phase
-      psz = new Float32Array(N);   // size multiplier
-      pspd = new Float32Array(N);  // per-dot flow speed
+      px = new Float32Array(N); pz = new Float32Array(N); pph = new Float32Array(N);
+      psz = new Float32Array(N); pspd = new Float32Array(N);
       var tmp = [];
       for (var i = 0; i < N; i++) {
         tmp.push({
           x: Math.random(),
-          z: Math.pow(Math.random(), 1.3),    // bias a little toward the front
+          z: Math.pow(Math.random(), 1.3),
           ph: Math.random() * TWO_PI,
           sz: 0.7 + Math.random() * 1.4,
           spd: 0.6 + Math.random() * 0.9
         });
       }
-      tmp.sort(function (a, b) { return b.z - a.z; }); // far -> near draw order
+      tmp.sort(function (a, b) { return b.z - a.z; });
       for (var j = 0; j < N; j++) {
         px[j] = tmp[j].x; pz[j] = tmp[j].z; pph[j] = tmp[j].ph;
         psz[j] = tmp[j].sz; pspd[j] = tmp[j].spd;
@@ -247,25 +327,18 @@
       vflag = new Uint8Array(N); vlink = new Uint8Array(N); vnext = new Int32Array(N);
     }
 
-    function frac(n) { return n - Math.floor(n); }
     function edge(u) { return Math.min(1, u / 0.06) * Math.min(1, (1 - u) / 0.06); }
 
     function render(t) {
       ctx.clearRect(0, 0, w, h);
       var cx = w * 0.5;
-      var horizonY = h * HORIZON;
-      var ground = h * GROUND;
-      var amp = h * AMP;
-      var tilt2 = (h * TILT) * 2;
-      var lift = h * LIFT;
+      var horizonY = h * HORIZON, ground = h * GROUND, amp = h * AMP;
+      var tilt2 = (h * TILT) * 2, lift = h * LIFT;
       var R = LINKR;
-      var cols = ((w / R) | 0) + 2;
-      var rows = ((h / R) | 0) + 2;
-      var cells = cols * rows;
+      var cols = ((w / R) | 0) + 2, rows = ((h / R) | 0) + 2, cells = cols * rows;
       if (!gridHead || gridLen < cells) { gridHead = new Int32Array(cells); gridLen = cells; }
       for (var c = 0; c < cells; c++) gridHead[c] = -1;
 
-      // ---- pass 1: positions (and bin into the spatial grid) ----
       var nv = 0;
       for (var i = 0; i < N; i++) {
         var xp = px[i];
@@ -273,7 +346,6 @@
         if (ex <= 0.01) continue;
         var z = pz[i];
         var persp = 1 / (1 + z * DEPTH);
-        // coherent rolling wave + a little per-dot organic flow for life
         var wave =
           Math.sin(xp * TWO_PI * 1.1 + z * 2.2 - t * ROLL) * 0.55 +
           Math.sin(xp * TWO_PI * 0.5 - z * 1.4 + t * 0.55) * 0.55 +
@@ -289,9 +361,8 @@
         if (al <= 0.02) continue;
         if (al > 1) al = 1;
         vsx[nv] = sx; vsy[nv] = sy; val[nv] = al;
-        vsz[nv] = (0.63 + persp * 2.63) * psz[i] * (0.7 + crest * 0.5); // dots scaled up
+        vsz[nv] = (0.63 + persp * 2.63) * psz[i] * (0.7 + crest * 0.5);
         vflag[nv] = (crest > 0.72 && persp > 0.4) ? 1 : 0;
-        // only the brighter dots join the link grid (faint dust stays unlinked)
         if (al >= LINKMIN) {
           vlink[nv] = 1;
           var gxi = (sx / R) | 0; if (gxi < 0) gxi = 0; else if (gxi >= cols) gxi = cols - 1;
@@ -304,10 +375,8 @@
         nv++;
       }
 
-      // ---- pass 2: thin links between nearby dots (one faint stroke) ----
       var R2 = R * R;
-      ctx.globalAlpha = 1;
-      ctx.lineWidth = 1;
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
       ctx.strokeStyle = "rgba(95,215,115," + LINKA + ")";
       ctx.beginPath();
       for (var k = 0; k < nv; k++) {
@@ -332,7 +401,6 @@
       }
       ctx.stroke();
 
-      // ---- pass 3: dots on top ----
       var cur = -1;
       for (var m = 0; m < nv; m++) {
         ctx.globalAlpha = val[m];
@@ -351,13 +419,12 @@
       var dt = last ? Math.min((time - last) / 1000, 0.05) : 0.016;
       last = time;
       for (var i = 0; i < N; i++) {
-        var nx = px[i] + dt * DRIFT * pspd[i];   // left -> right flow
+        var nx = px[i] + dt * DRIFT * pspd[i];
         px[i] = nx >= 1 ? nx - 1 : nx;
       }
       render(time * 0.001);
       raf = requestAnimationFrame(loop);
     }
-
     function start() {
       cancelAnimationFrame(raf);
       last = 0;
@@ -365,14 +432,30 @@
       else raf = requestAnimationFrame(loop);
     }
 
-    resize();
-    seed();
-    start();
-
+    resize(); seed(); start();
     var resizeTimer;
     window.addEventListener("resize", function () {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(function () { resize(); seed(); start(); }, 150);
     });
+  }
+
+  /* ---------- boot ---------- */
+  function init() {
+    initHeaderScroll();
+    initMobileNav();
+    initScrollReveal();
+    initCountUp();
+    initHeroWaveParallax();
+    initSmoothAnchors();
+    initContactForm();
+    initFooterYear();
+    initLogoRail();
+    initHeroWave();
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
   }
 })();
