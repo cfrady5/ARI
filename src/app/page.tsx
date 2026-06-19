@@ -31,12 +31,9 @@ export default function HomePage() {
         {/* Digital-dot helix — positioned up near the headline and bleeding off
             the right/top edges. A left→right black gradient keeps text crisp. */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-x-[-8%] top-1/2 h-[64%] -translate-y-1/2">
-            <WaveBand />
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/65 to-transparent" />
-          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black to-transparent" />
+          <WaveBand />
+          {/* Soft vignette behind the headline keeps the text crisp. */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_42%,rgba(0,0,0,0.82),transparent_52%)]" />
         </div>
 
         <Container className="relative z-10 flex flex-1 items-center pt-[calc(var(--header-height)+2rem)] pb-10">

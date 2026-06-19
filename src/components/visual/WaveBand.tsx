@@ -3,12 +3,11 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Green "ribbon" particle wave — a flat sheet of fine dots that twists along
- * its length: broad and face-on (showing the dot grid) where it turns toward
- * the viewer, pinching to a thin line where it turns edge-on. The centerline
- * keeps a dramatic upward slope to the right and the whole thing drifts
- * right-to-left. Transparent, lightweight, DPR-aware, static under
- * prefers-reduced-motion. (Inspired by flowing particle-wave artwork.)
+ * Green flowing dotted-wave sheet (no twist/helix).
+ * A band of fine dots whose centerline starts low on the left (below the
+ * headline) and sweeps up to the middle of the right edge, gently undulating
+ * and drifting right-to-left. Transparent, lightweight, DPR-aware, and held
+ * static under prefers-reduced-motion.
  */
 export function WaveBand({ className = "" }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -42,52 +41,46 @@ export function WaveBand({ className = "" }: { className?: string }) {
       ctx.clearRect(0, 0, w, h);
       if (!w || !h) return;
 
-      const t = time * 0.0005; // slow drift / twist, right → left
-      const twist = 2.6; // how many times the ribbon twists across the width
-      const rows = 24; // dots across the ribbon's width
+      const t = time * 0.0005; // slow drift, right → left
+      const rows = 16; // dots across the band thickness
       const step = w > 700 ? 5 : 9;
 
       for (let x = -10; x <= w; x += step) {
         const nx = x / w;
 
-        // Horizontal undulating centerline (~2 humps), centered in the box —
-        // matches the flowing-ribbon reference (no steep slope).
+        // Start low-left (below the text) and rise to the middle on the right.
         const centerY =
-          h * 0.5 +
-          Math.sin(nx * 13 + t) * h * 0.2 +
-          Math.sin(nx * 6.5 - t * 0.7) * h * 0.05;
+          h * 0.86 -
+          Math.pow(nx, 1.25) * h * 0.4 +
+          Math.sin(nx * 9 + t) * h * 0.05 +
+          Math.sin(nx * 4 - t * 0.6) * h * 0.03;
 
-        // Fairly uniform ribbon width.
-        const halfW = h * 0.2 * (0.85 + nx * 0.15);
+        const bandHalf = h * 0.1 * (0.8 + nx * 0.4); // slightly fuller right
 
-        // Twist angle along the length (+t animates the twist / drift).
-        const theta = nx * twist * TWO_PI + t;
-        const cosT = Math.cos(theta);
-        const sinT = Math.sin(theta);
-
-        // Fade only at the extreme edges (mostly off-screen).
-        const edge = Math.min(1, Math.min(nx, 1 - nx) / 0.06);
+        // Fade in/out only at the far horizontal edges.
+        const edge = Math.min(1, Math.min(nx, 1 - nx) / 0.05);
         if (edge <= 0) continue;
 
         for (let v = 0; v < rows; v++) {
-          const s = (v / (rows - 1)) * 2 - 1; // -1..1 across the ribbon
+          const s = v / (rows - 1) - 0.5; // -0.5..0.5 across the band
 
-          // Flat ribbon: width projects vertically by cos(theta); the sin
-          // component is "depth" used only for brightness/size.
-          const y = centerY + s * halfW * cosT;
+          // Per-row ripple gives the sheet an organic, flowing surface.
+          const ripple = Math.sin(nx * 13 + v * 0.55 + t * 1.1) * h * 0.018;
+          const y = centerY + s * bandHalf * 2 + ripple;
           if (y < -6 || y > h + 6) continue;
 
-          const depth = (s * sinT + 1) / 2; // 0 = back, 1 = front
-          // Fade near both the top and bottom of the band (centered ribbon).
-          const fade =
-            Math.min(1, Math.max(0, y / (h * 0.16))) *
-            Math.min(1, Math.max(0, (h - y) / (h * 0.16)));
-          const alpha = edge * fade * (0.12 + depth * 0.72);
+          // Soft fade toward the band's top/bottom edges.
+          const vFade = 1 - Math.abs(s) * 1.7;
+          if (vFade <= 0) continue;
+
+          // The top of the band reads a touch brighter (light from above).
+          const bright = 0.45 + (0.5 - s) * 0.55;
+          const alpha = edge * vFade * (0.18 + bright * 0.5);
           if (alpha <= 0.02) continue;
 
-          const g = Math.round(150 + depth * 95);
-          const r = Math.round(28 + depth * 48);
-          const size = 0.5 + depth * 1.0;
+          const g = Math.round(150 + bright * 95);
+          const r = Math.round(28 + bright * 45);
+          const size = 0.55 + bright * 0.65;
 
           ctx.beginPath();
           ctx.fillStyle = `rgba(${r}, ${g}, 78, ${alpha})`;
