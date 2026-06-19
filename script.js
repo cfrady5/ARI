@@ -37,6 +37,21 @@
       el.classList.add("visible");
     });
   } else {
+    // Stagger elements that reveal together (e.g. cards in a grid, or a
+    // heading + body) so each section cascades in instead of popping at once.
+    var revealGroups = {};
+    var groupKey = 0;
+    var lastParent = null;
+    reveals.forEach(function (el) {
+      if (el.parentElement !== lastParent) {
+        lastParent = el.parentElement;
+        groupKey++;
+        revealGroups[groupKey] = 0;
+      }
+      var i = revealGroups[groupKey];
+      el.style.setProperty("--reveal-delay", Math.min(i, 6) * 90 + "ms");
+      revealGroups[groupKey] = i + 1;
+    });
     var revealObs = new IntersectionObserver(
       function (entries) {
         entries.forEach(function (entry) {
@@ -46,7 +61,7 @@
           }
         });
       },
-      { threshold: 0.12 }
+      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" }
     );
     reveals.forEach(function (el) {
       revealObs.observe(el);
