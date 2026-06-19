@@ -193,10 +193,12 @@
     var DRIFT   = 0.02;   // left -> right grid drift (units/sec) — calm
     var ROLL    = 0.6;    // wave roll speed — calm
 
-    var GX = 0, GZ = 0;
+    var GX = 0, GZ = 0, colPhase = null;
     function seed() {
       GX = Math.round(Math.min(Math.max(w / 6, 120), 220)); // columns across (denser)
       GZ = 62;                                              // rows into depth (thicker/denser)
+      colPhase = new Float32Array(GX);                     // per-strand phase (organic front edge)
+      for (var i = 0; i < GX; i++) colPhase[i] = Math.random() * TWO_PI;
     }
 
     function frac(n) { return n - Math.floor(n); }
@@ -226,6 +228,13 @@
             Math.sin(xp * TWO_PI * 1.1 + z * 2.2 - t * ROLL) * 0.55 +
             Math.sin(xp * TWO_PI * 0.5 - z * 1.4 + t * 0.55) * 0.55 +
             Math.sin(z * TWO_PI * 0.7 + t * 0.70) * 0.30;
+          // extra organic flow concentrated on the near edge (fades with depth)
+          // so the closest row of dots isn't a rigid line.
+          var near = persp * persp;
+          wave += near * (
+            Math.sin(xp * TWO_PI * 2.7 + colPhase[ix] + t * 1.25) * 0.34 +
+            Math.sin(xp * TWO_PI * 4.3 - t * 0.95) * 0.18
+          );
           var sx = cx + (xp - 0.5) * w * SPREAD * persp;
           var sy = rowY - wave * amp * persp - (xp - 0.5) * (tilt * 2) * persp;
           var crest = (wave + 1.4) / 2.8;
