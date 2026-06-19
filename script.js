@@ -257,11 +257,14 @@
           var d = f - i;
           var y, scale, opacity;
           if (d <= 0) {
-            // upcoming card: waiting below, slides up into place
+            // upcoming card: waiting below, slides up into place.
+            // Opacity ramps faster than the slide so the card turns solid
+            // early and never bleeds the card behind through it.
             var t = d + 1;
             if (t < 0) t = 0;
             y = (1 - t) * 64;
-            opacity = t;
+            opacity = t / 0.3;
+            if (opacity > 1) opacity = 1;
             scale = 0.96 + 0.04 * t;
           } else {
             // covered card: recedes slightly behind the active one

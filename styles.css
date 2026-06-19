@@ -1340,7 +1340,9 @@ a {
    sticky scroll-deck only engages on wider screens with motion allowed, so
    mobile + reduced-motion users always get clean stacked cards (no JS reqd).
    ========================================================================= */
-.ari-difference-section,
+.ari-difference-section {
+  padding: clamp(1.75rem, 3.5vw, 3rem) 0;
+}
 .mission-impact-section {
   padding: clamp(3.5rem, 8vw, 6.5rem) 0;
 }
@@ -1379,9 +1381,10 @@ a {
   padding: clamp(1.75rem, 3vw, 2.75rem);
   border-radius: 24px;
   border: 1px solid var(--card-border);
-  background:
-    radial-gradient(130% 150% at 100% 0%, rgba(36, 198, 55, 0.1), transparent 55%),
-    linear-gradient(180deg, #0a0f0d, #060a09 72%);
+  background-color: #060a09;
+  background-image:
+    radial-gradient(130% 150% at 100% 0%, rgba(36, 198, 55, 0.12), transparent 55%),
+    linear-gradient(180deg, #0c1411, #07100d 72%);
   box-shadow: var(--shadow-card), 0 0 0 1px rgba(36, 198, 55, 0.06);
 }
 .diff-content {
@@ -1471,7 +1474,7 @@ a {
 @media (min-width: 761px) and (prefers-reduced-motion: no-preference) {
   .ari-diff-scroll {
     position: relative;
-    height: 360vh;
+    height: 300vh;
     margin-top: 0;
   }
   .ari-diff-sticky {
