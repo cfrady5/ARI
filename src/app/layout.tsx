@@ -27,15 +27,11 @@ export const metadata: Metadata = {
     title: `${SITE.name} | Catalyzing National Security Innovation`,
     description: SITE.description,
     url: SITE.url,
-    images: [
-      { url: "/api/og", width: 1200, height: 630, alt: SITE.name },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: SITE.name,
     description: SITE.description,
-    images: ["/api/og"],
   },
   robots: { index: true, follow: true },
 };

@@ -58,7 +58,9 @@ export function SiteHeader() {
           aria-label="Primary"
           className="hidden items-center gap-1 xl:flex"
         >
-          {MAIN_NAV.map((item) => {
+          {MAIN_NAV.filter(
+            (item) => item.href !== "/" && item.href !== "/contact",
+          ).map((item) => {
             const active = isActive(pathname, item.href);
             return (
               <Link
@@ -84,8 +86,13 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center xl:flex">
-          <Button href="/contact" className="px-5 py-2.5 text-sm">
-            Partner With ARI
+          <Button
+            href="/contact"
+            variant="secondary"
+            aria-current={isActive(pathname, "/contact") ? "page" : undefined}
+            className="px-6 py-2.5 text-sm"
+          >
+            Contact
           </Button>
         </div>
 

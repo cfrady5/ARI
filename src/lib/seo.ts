@@ -30,20 +30,11 @@ export function pageMetadata({
       url,
       siteName: SITE.name,
       type: "website",
-      images: [
-        {
-          url: "/api/og",
-          width: 1200,
-          height: 630,
-          alt: `${SITE.shortName} — ${title}`,
-        },
-      ],
     },
     twitter: {
       card: "summary_large_image",
       title: fullTitle,
       description,
-      images: ["/api/og"],
     },
   };
 }

@@ -69,11 +69,8 @@ html {
 
 body {
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 20% 0%, rgba(59, 174, 72, 0.1), transparent 28%),
-    radial-gradient(circle at 80% 10%, rgba(31, 54, 85, 0.45), transparent 32%),
-    var(--color-ari-black);
-  background-attachment: fixed;
+  /* Clean, near-pure black canvas — color comes from accents, not the bg. */
+  background-color: #000000;
   color: var(--color-ari-white);
   font-family: var(--font-sans);
   font-weight: 400;
@@ -95,9 +92,18 @@ h4,
 h5,
 h6 {
   font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.08;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
   color: var(--color-ari-white);
+  text-wrap: balance;
+}
+
+/* Oversized hero display headline (matches the reference vibe). */
+.display-xl {
+  font-size: clamp(3.25rem, 9vw, 7.5rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
   text-wrap: balance;
 }
 

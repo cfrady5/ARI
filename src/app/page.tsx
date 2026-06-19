@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Container from "@/components/layout/Container";
-import PageHero from "@/components/layout/PageHero";
 import SectionHeader from "@/components/layout/SectionHeader";
 import CTASection from "@/components/layout/CTASection";
 import Button from "@/components/ui/Button";
@@ -9,7 +8,7 @@ import InitiativeCard from "@/components/content/InitiativeCard";
 import StatCard from "@/components/content/StatCard";
 import NewsletterSignup from "@/components/content/NewsletterSignup";
 import PartnerLogoStrip from "@/components/content/PartnerLogoStrip";
-import { DataPanel } from "@/components/visual/DataPanel";
+import { HeroWaveField } from "@/components/visual/HeroWaveField";
 import { IconBadge } from "@/components/visual/IconBadge";
 import { Icon } from "@/components/visual/Icon";
 import { WHAT_ARI_DOES } from "@/data/approach";
@@ -19,7 +18,6 @@ import {
 } from "@/data/initiatives";
 import { CAPABILITIES } from "@/data/capabilities";
 import { METRICS } from "@/data/metrics";
-import { SITE } from "@/data/site";
 
 const homepageInitiatives = HOMEPAGE_INITIATIVE_SLUGS.map(getInitiative).filter(
   (i): i is NonNullable<typeof i> => Boolean(i),
@@ -29,33 +27,46 @@ export default function HomePage() {
   return (
     <>
       {/* 1. Hero */}
-      <PageHero
-        eyebrow={SITE.tagline}
-        title={
-          <>
-            Catalyzing innovation for national security and economic{" "}
-            <span className="accent">prosperity.</span>
-          </>
-        }
-        description="ARI brings together government, industry, academia, and mission-driven partners to move critical technologies into real-world use with speed, discipline, and scale."
-        actions={
-          <>
-            <Button href="/initiatives" icon="arrow-right">
-              Explore Our Initiatives
-            </Button>
-            <Button href="/contact" variant="secondary">
-              Partner With ARI
-            </Button>
-          </>
-        }
-        aside={<DataPanel metrics={METRICS.slice(0, 4)} heading="ARI Impact Network" />}
-      />
+      <section className="relative isolate flex min-h-[92svh] flex-col overflow-hidden bg-black">
+        {/* Flowing green wave field (right-weighted, bleeds off edges) */}
+        <div className="absolute inset-0" aria-hidden="true">
+          <div className="absolute inset-y-0 right-0 left-1/4 sm:left-1/3">
+            <HeroWaveField />
+          </div>
+          {/* Left-to-right black mask keeps the headline crisp on black */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black to-transparent" />
+        </div>
 
-      {/* 2. Trust Bar */}
-      <section className="section-tight">
-        <Container>
-          <PartnerLogoStrip copy="Trusted by public, private, academic, and mission-driven partners advancing national security, economic growth, and critical technology deployment." />
+        <Container className="relative flex flex-1 items-center pt-[calc(var(--header-height)+2rem)] pb-44">
+          <div className="max-w-3xl">
+            <h1 className="display-xl">
+              Because the Warfighter
+              <br />
+              <span className="accent">Can&rsquo;t Wait.</span>
+            </h1>
+            <p className="mt-7 max-w-xl text-lg leading-relaxed text-ari-muted sm:text-xl">
+              ARI turns breakthrough science and technology into mission-ready
+              impact — convening government, industry, academia, and partners to
+              move at the speed the mission demands.
+            </p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Button href="/initiatives" variant="secondary" icon="arrow-up-right">
+                Explore Our Research
+              </Button>
+              <Button href="/contact" icon="arrow-right">
+                Partner With ARI
+              </Button>
+            </div>
+          </div>
         </Container>
+
+        {/* Partner / trust strip pinned to the bottom of the hero */}
+        <div className="relative border-t border-white/10 bg-black/60 backdrop-blur-sm">
+          <Container className="py-6">
+            <PartnerLogoStrip />
+          </Container>
+        </div>
       </section>
 
       {/* 3. What ARI Does */}

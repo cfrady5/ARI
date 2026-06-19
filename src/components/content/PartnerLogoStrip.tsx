@@ -1,37 +1,53 @@
+import { Icon } from "@/components/visual/Icon";
+
 /**
- * Trust bar / partner strip. Uses neutral text placeholders for partner
- * categories (no fabricated logos). Swap in real partner logos when available.
+ * Partner / trust strip styled after the reference hero band: partner
+ * wordmarks separated by dividers, flanked by decorative carousel chevrons.
+ * Wordmarks stand in for partner logos until real logo assets are supplied.
  */
 
-const PARTNER_TYPES = [
-  "Government",
-  "Industry",
-  "Academia",
-  "Research",
-  "Mission-Driven",
+const PARTNERS = [
+  "DARPAConnect",
+  "Platform One / Marketplace One",
+  "Heartland BioWorks",
+  "SciTechCONNECT",
+  "Silicon Crossroads",
 ];
 
-type PartnerLogoStripProps = {
-  copy: string;
-};
-
-export function PartnerLogoStrip({ copy }: PartnerLogoStripProps) {
+export function PartnerLogoStrip({ label }: { label?: string }) {
   return (
-    <div className="surface px-6 py-7 sm:px-10">
-      <p className="text-center text-sm leading-relaxed text-ari-muted">
-        {copy}
-      </p>
-      <hr className="divider-green my-6" />
-      <ul className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-        {PARTNER_TYPES.map((type) => (
-          <li
-            key={type}
-            className="text-sm font-semibold uppercase tracking-[0.14em] text-ari-subtle"
-          >
-            {type}
-          </li>
-        ))}
-      </ul>
+    <div className="w-full">
+      {label ? (
+        <p className="mb-4 text-center text-xs font-medium uppercase tracking-[0.2em] text-ari-subtle">
+          {label}
+        </p>
+      ) : null}
+      <div className="flex items-center gap-3 sm:gap-5">
+        <span
+          aria-hidden="true"
+          className="hidden text-ari-subtle sm:inline-flex"
+        >
+          <Icon name="chevron-down" size={20} className="rotate-90" />
+        </span>
+
+        <ul className="flex flex-1 flex-wrap items-center justify-center gap-x-6 gap-y-3 sm:flex-nowrap sm:divide-x sm:divide-white/10">
+          {PARTNERS.map((partner) => (
+            <li
+              key={partner}
+              className="px-3 text-center text-xs font-semibold uppercase tracking-[0.14em] text-ari-muted transition-colors hover:text-ari-white sm:px-6 sm:text-sm"
+            >
+              {partner}
+            </li>
+          ))}
+        </ul>
+
+        <span
+          aria-hidden="true"
+          className="hidden text-ari-subtle sm:inline-flex"
+        >
+          <Icon name="chevron-down" size={20} className="-rotate-90" />
+        </span>
+      </div>
     </div>
   );
 }
