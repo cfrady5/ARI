@@ -1335,18 +1335,22 @@ a {
    See the "Hero wave — fully generated green dot-flow" block in script.js. */
 
 /* =========================================================================
-   Homepage sections — Why ARI Works (scroll-stacked deck) + Mission Impact
-   The DEFAULT layout for the deck is a plain, readable static stack. The
-   sticky scroll-deck only engages on wider screens with motion allowed, so
-   mobile + reduced-motion users always get clean stacked cards (no JS reqd).
+   Homepage sections — Why ARI Works (sticky card deck) + Mission Impact
+   The section header is pinned (sticky) so it stays visible while the cards
+   stack beneath it. Each card sticks just below the pinned header and the
+   next card slides up over it, leaving a thin edge of the previous showing.
+   On narrow screens everything collapses to a plain readable column. No JS.
    ========================================================================= */
 .ari-difference-section {
-  padding: clamp(1.75rem, 3.5vw, 3rem) 0;
+  padding: clamp(72px, 8vw, 110px) clamp(24px, 6vw, 88px);
+  background: #020402;
+  color: #fff;
 }
-.mission-impact-section {
-  padding: clamp(3.5rem, 8vw, 6.5rem) 0;
+.ari-difference-inner {
+  max-width: 1180px;
+  margin: 0 auto;
 }
-.ari-diff-head h2,
+.ari-difference-header h2,
 .mission-impact-head h2 {
   font-size: clamp(2rem, 4.6vw, 3rem);
   font-weight: 800;
@@ -1363,40 +1367,72 @@ a {
   margin-right: auto;
 }
 
-/* ---- Why ARI Works : static-stack defaults ---- */
-.ari-diff-scroll {
-  margin-top: clamp(2rem, 4vw, 3rem);
+/* ---- Why ARI Works : pinned header + sticky stacking cards ---- */
+.ari-difference-header {
+  position: sticky;
+  top: calc(var(--header-h) + 16px);
+  z-index: 6;
+  max-width: 720px;
+  margin-bottom: clamp(32px, 5vw, 56px);
+  padding-bottom: 12px;
+  background: #020402;
 }
-.ari-diff-stage {
-  display: grid;
-  gap: 1.25rem;
-}
-.diff-card {
+.ari-card-stack {
   position: relative;
-  overflow: hidden;
+  display: grid;
+  gap: 28px;
+  max-width: 920px;
+  margin: 0 auto;
+  /* extra room so the final card dwells in place below the pinned header
+     before the whole section scrolls away */
+  padding-bottom: clamp(60px, 16vh, 180px);
+}
+.ari-stack-card {
+  position: sticky;
+  top: calc(var(--header-h) + 188px);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  min-height: 280px;
-  padding: clamp(1.75rem, 3vw, 2.75rem);
+  min-height: clamp(300px, 44vh, 360px);
+  padding: clamp(28px, 4vw, 48px);
+  border: 1px solid rgba(36, 198, 55, 0.55);
   border-radius: 24px;
-  border: 1px solid var(--card-border);
   background-color: #060a09;
   background-image:
-    radial-gradient(130% 150% at 100% 0%, rgba(36, 198, 55, 0.12), transparent 55%),
-    linear-gradient(180deg, #0c1411, #07100d 72%);
-  box-shadow: var(--shadow-card), 0 0 0 1px rgba(36, 198, 55, 0.06);
+    radial-gradient(circle at 86% 28%, rgba(36, 198, 55, 0.12), transparent 26%),
+    linear-gradient(145deg, rgba(36, 198, 55, 0.08), rgba(255, 255, 255, 0.025));
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.5), 0 0 40px rgba(36, 198, 55, 0.12);
+  overflow: hidden;
 }
+/* Each card sticks a little lower than the last, so as the next slides up
+   over it a thin edge of the previous card stays visible behind. */
+.ari-stack-card:nth-child(1) {
+  z-index: 1;
+}
+.ari-stack-card:nth-child(2) {
+  z-index: 2;
+  top: calc(var(--header-h) + 200px);
+}
+.ari-stack-card:nth-child(3) {
+  z-index: 3;
+  top: calc(var(--header-h) + 212px);
+}
+.ari-stack-card:nth-child(4) {
+  z-index: 4;
+  top: calc(var(--header-h) + 224px);
+}
+
+/* ---- shared card interior (number, icon, motif, copy, wave) ---- */
 .diff-content {
   position: relative;
   z-index: 2;
   max-width: 46ch;
 }
-.diff-card h3 {
+.ari-stack-card h3 {
   font-size: clamp(1.35rem, 2.4vw, 1.9rem);
   margin-bottom: 0.6rem;
 }
-.diff-card p {
+.ari-stack-card p {
   color: var(--muted);
   font-size: 1rem;
   max-width: 48ch;
@@ -1470,39 +1506,23 @@ a {
   stroke-width: 2;
 }
 
-/* ---- Why ARI Works : sticky scroll-deck (desktop + motion only) ---- */
-@media (min-width: 761px) and (prefers-reduced-motion: no-preference) {
-  .ari-diff-scroll {
+/* ---- Why ARI Works : collapse to plain single column ---- */
+@media (max-width: 800px) {
+  .ari-difference-header {
+    position: static;
+    top: auto;
+  }
+  .ari-card-stack {
+    gap: 22px;
+    padding-bottom: 0;
+  }
+  .ari-stack-card {
     position: relative;
-    height: 300vh;
+    top: auto;
+    min-height: auto;
+  }
+  .ari-stack-card:not(:first-child) {
     margin-top: 0;
-  }
-  .ari-diff-sticky {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 24px;
-  }
-  .ari-diff-stage {
-    position: relative;
-    display: block;
-    width: 100%;
-    max-width: 960px;
-    height: clamp(360px, 56vh, 480px);
-  }
-  .diff-card {
-    position: absolute;
-    inset: 0;
-    transition: box-shadow 0.45s var(--reveal-ease);
-    will-change: transform, opacity;
-  }
-  .diff-card.is-active {
-    border-color: rgba(36, 198, 55, 0.55);
-    box-shadow: var(--shadow-card), 0 0 0 1px rgba(36, 198, 55, 0.3),
-      0 30px 80px rgba(36, 198, 55, 0.18);
   }
 }
 
