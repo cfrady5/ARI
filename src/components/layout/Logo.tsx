@@ -1,50 +1,78 @@
-import Link from "next/link";
+"use client";
 
-type LogoProps = {
-  /** Show the stacked "Applied Research Institute" wordmark beside the mark. */
-  showWordmark?: boolean;
-  className?: string;
-};
+import Link from "next/link";
+import { useState } from "react";
 
 /**
- * ARI brand lockup — the green "ARI" mark + stacked wordmark, matching the
- * official logo structure on a dark surface (green mark, white wordmark).
+ * ARI home-button logo.
  *
- * To use the exact official artwork instead of this typographic lockup, drop
- * the file at `public/brand/ari-logo.svg` and swap the inner markup for:
- *   <img src="/brand/ari-logo.svg" alt="ARI — Applied Research Institute" />
- * (Next prefixes the basePath automatically when referenced via next/image,
- * or prefix manually for a raw <img>.)
+ * Uses the official white logo artwork at `public/brand/ari-logo-white.png`
+ * (or .svg — see note) when present, and gracefully falls back to a
+ * typographic lockup so the header/footer never shows a broken image.
+ *
+ * TO USE THE OFFICIAL LOGO: add the all-white logo file to the repo at
+ *   public/brand/ari-logo-white.png
+ * (PNG with a transparent background, or replace the extension below with
+ * .svg if you upload an SVG). That's the only step — it then renders here.
+ *
+ * NEXT_PUBLIC_BASE_PATH ("/ARI" on GitHub Pages, "" locally) is prefixed so
+ * the asset resolves correctly under the project subpath.
  */
-export function Logo({ showWordmark = true, className = "" }: LogoProps) {
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const LOGO_SRC = `${BASE}/brand/ari-logo-white.png`;
+
+type LogoProps = {
+  showWordmark?: boolean;
+  className?: string;
+  /** Height utility for the image variant (default h-9 ≈ 36px). */
+  imgClassName?: string;
+};
+
+export function Logo({
+  showWordmark = true,
+  className = "",
+  imgClassName = "h-9",
+}: LogoProps) {
+  const [imgOk, setImgOk] = useState(true);
+
   return (
     <Link
       href="/"
       aria-label="ARI — Applied Research Institute, home"
-      className={`group inline-flex items-center gap-3 ${className}`}
+      className={`group inline-flex items-center ${className}`}
     >
-      {/* Two-tone green "ARI" mark */}
-      <span
-        aria-hidden="true"
-        className="text-[1.65rem] font-extrabold leading-none tracking-[-0.04em]"
-      >
-        <span className="text-ari-green-dark">A</span>
-        <span className="text-ari-green">RI</span>
-      </span>
-
-      {showWordmark ? (
-        <>
+      {imgOk ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={LOGO_SRC}
+          alt="ARI — Applied Research Institute"
+          onError={() => setImgOk(false)}
+          className={`w-auto ${imgClassName}`}
+        />
+      ) : (
+        <span className="inline-flex items-center gap-3">
           <span
             aria-hidden="true"
-            className="hidden h-7 w-px bg-white/20 sm:block"
-          />
-          <span className="hidden flex-col text-[0.6rem] font-semibold uppercase leading-[1.35] tracking-[0.16em] text-ari-white sm:flex">
-            <span>Applied</span>
-            <span>Research</span>
-            <span>Institute</span>
+            className="text-[1.65rem] font-extrabold leading-none tracking-[-0.04em]"
+          >
+            <span className="text-ari-green-dark">A</span>
+            <span className="text-ari-green">RI</span>
           </span>
-        </>
-      ) : null}
+          {showWordmark ? (
+            <>
+              <span
+                aria-hidden="true"
+                className="hidden h-7 w-px bg-white/20 sm:block"
+              />
+              <span className="hidden flex-col text-[0.6rem] font-semibold uppercase leading-[1.35] tracking-[0.16em] text-ari-white sm:flex">
+                <span>Applied</span>
+                <span>Research</span>
+                <span>Institute</span>
+              </span>
+            </>
+          ) : null}
+        </span>
+      )}
     </Link>
   );
 }

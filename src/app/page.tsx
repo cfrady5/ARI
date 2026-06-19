@@ -7,7 +7,7 @@ import FeatureCard from "@/components/content/FeatureCard";
 import InitiativeCard from "@/components/content/InitiativeCard";
 import StatCard from "@/components/content/StatCard";
 import NewsletterSignup from "@/components/content/NewsletterSignup";
-import PartnerLogoStrip from "@/components/content/PartnerLogoStrip";
+import PartnerMarquee from "@/components/content/PartnerMarquee";
 import { HeroWaveField } from "@/components/visual/HeroWaveField";
 import { IconBadge } from "@/components/visual/IconBadge";
 import { Icon } from "@/components/visual/Icon";
@@ -47,25 +47,19 @@ export default function HomePage() {
             </h1>
             <p className="mt-7 max-w-xl text-lg leading-relaxed text-ari-muted sm:text-xl">
               ARI turns breakthrough science and technology into mission-ready
-              impact — convening government, industry, academia, and partners to
-              move at the speed the mission demands.
+              impact.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
               <Button href="/initiatives" variant="secondary" icon="arrow-up-right">
                 Explore Our Research
               </Button>
-              <Button href="/contact" icon="arrow-right">
-                Partner With ARI
-              </Button>
             </div>
           </div>
         </Container>
 
-        {/* Partner / trust strip pinned to the bottom of the hero */}
-        <div className="relative border-t border-white/10 bg-black/60 backdrop-blur-sm">
-          <Container className="py-6">
-            <PartnerLogoStrip />
-          </Container>
+        {/* Auto-scrolling partner / trust strip pinned to the bottom */}
+        <div className="relative border-t border-white/10 bg-black/60 py-5 backdrop-blur-sm">
+          <PartnerMarquee />
         </div>
       </section>
 

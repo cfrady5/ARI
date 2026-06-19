@@ -473,6 +473,44 @@ a {
   animation: ari-fade-up 0.7s ease both;
 }
 
+/* Infinite horizontal marquee (partner logo strip). The track renders its
+   items twice; translating by -50% loops seamlessly. */
+@keyframes ari-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: ari-marquee 40s linear infinite;
+}
+
+.marquee-viewport:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 7%,
+    #000 93%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 7%,
+    #000 93%,
+    transparent
+  );
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
