@@ -340,7 +340,7 @@ a {
   font-size: clamp(3.25rem, 6.4vw, 6rem);
   font-weight: 800;
   line-height: 0.95;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.02em;
 }
 .hero h1 .hero-line { display: block; }
 .hero h1 .accent { display: block; margin-top: 0.5rem; }
