@@ -192,7 +192,7 @@
     var TILT    = 0.12;   // right-side up-sweep (frac of H)
     var DRIFT   = 0.02;   // left -> right grid drift (units/sec) — calm
     var ROLL    = 0.6;    // wave roll speed — calm
-    var LIFT    = 0.07;   // shift the whole flow up (frac of H) — toward the copy/CTA
+    var LIFT    = 0;      // vertical flow offset (frac of H); 0 keeps it below the CTA
 
     var BACKW = 0.82;   // far-edge width vs near (high = little convergence, no fan)
     var LINKR = 14;     // link radius in px — shorter, cleaner connections
