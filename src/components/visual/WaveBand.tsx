@@ -3,11 +3,13 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Green "wave band" above the partner logo strip.
- * Dotted strands flow gently right-to-left and sweep upward to the right with
- * a gradually increasing slope (flat at the left, steeper toward the right),
- * echoing the hero reference. Transparent canvas, lightweight, DPR-aware, and
- * held static under prefers-reduced-motion.
+ * Green "helix" wave band above the partner logo strip.
+ *
+ * Dots are placed around a twisting tube (a helix): the strands rotate around a
+ * centerline that sweeps dramatically upward to the right. Points on the front
+ * of the tube are brighter/larger than those on the back, giving a 3-D woven,
+ * DNA-like ribbon that drifts right-to-left. Transparent, lightweight,
+ * DPR-aware, and held static under prefers-reduced-motion.
  */
 export function WaveBand({ className = "" }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -35,49 +37,48 @@ export function WaveBand({ className = "" }: { className?: string }) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
+    const TWO_PI = Math.PI * 2;
+
     const draw = (time: number) => {
       ctx.clearRect(0, 0, w, h);
       if (!w || !h) return;
 
-      const t = time * 0.00018; // slow drift; +t moves crests right → left
-      const strands = Math.max(8, Math.round(h / 11));
+      const t = time * 0.0006; // slow rotation; pattern drifts right → left
+      const turns = 4; // number of helix twists across the width
+      const around = 16; // points around the tube circumference
       const step = w > 700 ? 5 : 9;
 
-      for (let i = 0; i < strands; i++) {
-        const frac = strands > 1 ? i / (strands - 1) : 0;
-        // Baselines sit low so there is room for a dramatic climb to the right.
-        const baseY = h * (0.78 + frac * 0.5);
-        const sp = i * 0.3;
+      for (let x = -10; x <= w; x += step) {
+        const nx = x / w;
 
-        for (let x = -10; x <= w; x += step) {
-          const nx = x / w;
+        // Centerline: dramatic convex climb toward the right.
+        const centerY = h * 0.96 - Math.pow(nx, 2.4) * h * 0.98;
+        // Tube radius widens slightly toward the right.
+        const radius = h * 0.16 * (0.5 + nx * 0.85);
 
-          // Dramatic, curved upward sweep: nearly flat at the left, then a
-          // steep convex climb toward the right (higher exponent = more curve).
-          const slope = -Math.pow(nx, 2.6) * h * 1.15;
+        // Fade in/out at the horizontal edges.
+        const edge = Math.min(1, Math.min(nx, 1 - nx) / 0.1);
+        if (edge <= 0) continue;
 
-          // Undulation, slightly larger toward the right.
-          const amp = h * 0.045 * (0.4 + nx);
-          const wave =
-            Math.sin(nx * 7 + t * 2 + sp) * amp +
-            Math.sin(nx * 15 + t * 1.4 + sp * 0.6) * amp * 0.35;
+        for (let k = 0; k < around; k++) {
+          const v = k / around;
+          const angle = nx * turns * TWO_PI + v * TWO_PI + t;
 
-          const y = baseY + slope + wave;
+          const y = centerY + Math.sin(angle) * radius;
           if (y < -6 || y > h + 6) continue;
 
-          // Fade at left/right edges and softly near the top.
-          const edge = Math.min(1, Math.min(nx, 1 - nx) / 0.12);
-          const topFade = Math.min(1, y / (h * 0.18));
-          const crest = (Math.sin(nx * 7 + t * 2 + sp) + 1) / 2;
-          const alpha = edge * Math.max(0, topFade) * (0.22 + crest * 0.62);
+          const depth = (Math.cos(angle) + 1) / 2; // 0 = back, 1 = front
+          const topFade = Math.min(1, Math.max(0, y / (h * 0.14)));
+          const alpha = edge * topFade * (0.14 + depth * 0.72);
           if (alpha <= 0.02) continue;
 
-          const g = Math.round(150 + crest * 95);
-          const r = Math.round(28 + crest * 48);
+          const g = Math.round(150 + depth * 95);
+          const r = Math.round(28 + depth * 48);
+          const size = 0.5 + depth * 1.5;
 
           ctx.beginPath();
           ctx.fillStyle = `rgba(${r}, ${g}, 78, ${alpha})`;
-          ctx.arc(x, y, 0.55 + nx * 1.0, 0, Math.PI * 2);
+          ctx.arc(x, y, size, 0, TWO_PI);
           ctx.fill();
         }
       }
