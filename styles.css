@@ -1335,11 +1335,11 @@ a {
    See the "Hero wave — fully generated green dot-flow" block in script.js. */
 
 /* =========================================================================
-   Homepage sections — Why ARI Works (sticky card deck) + Mission Impact
-   The section header is pinned (sticky) so it stays visible while the cards
-   stack beneath it. Each card sticks just below the pinned header and the
-   next card slides up over it, leaving a thin edge of the previous showing.
-   On narrow screens everything collapses to a plain readable column. No JS.
+   Homepage sections — Why ARI Works (pinned stage) + Mission Impact
+   On desktop the header + card deck pin together as a single stage and
+   scroll progress reveals the cards one by one (see initCardStack in
+   script.js). Once the last card is shown, scrolling past releases the whole
+   stage as one block. Narrow screens / reduced-motion get a plain column.
    ========================================================================= */
 .ari-difference-section {
   padding: clamp(72px, 8vw, 110px) clamp(24px, 6vw, 88px);
@@ -1367,35 +1367,24 @@ a {
   margin-right: auto;
 }
 
-/* ---- Why ARI Works : pinned header + sticky stacking cards ---- */
+/* ---- Why ARI Works : base = plain stacked column (mobile / reduced-motion) ---- */
 .ari-difference-header {
-  position: sticky;
-  top: calc(var(--header-h) + 16px);
-  z-index: 6;
   max-width: 720px;
-  margin-bottom: clamp(40px, 5vw, 64px);
-  padding-bottom: 12px;
-  background: #020402;
+  margin-bottom: clamp(28px, 5vw, 48px);
 }
 .ari-card-stack {
-  position: relative;
   display: grid;
-  gap: 28px;
-  max-width: 920px;
-  margin: 0 auto;
-  /* small tail so the last card registers, then the deck releases quickly
-     instead of staying stuck while you scroll empty space */
-  padding-bottom: clamp(12px, 3vh, 32px);
+  gap: 22px;
+  max-width: 940px;
 }
 .ari-stack-card {
-  position: sticky;
-  top: calc(var(--header-h) + 236px);
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  min-height: clamp(300px, 44vh, 360px);
+  min-height: 280px;
   padding: clamp(28px, 4vw, 48px);
-  border: 1px solid rgba(36, 198, 55, 0.55);
+  border: 1px solid rgba(36, 198, 55, 0.5);
   border-radius: 24px;
   background-color: #060a09;
   background-image:
@@ -1403,23 +1392,6 @@ a {
     linear-gradient(145deg, rgba(36, 198, 55, 0.08), rgba(255, 255, 255, 0.025));
   box-shadow: 0 28px 90px rgba(0, 0, 0, 0.5), 0 0 40px rgba(36, 198, 55, 0.12);
   overflow: hidden;
-}
-/* Each card sticks a little lower than the last, so as the next slides up
-   over it a thin edge of the previous card stays visible behind. */
-.ari-stack-card:nth-child(1) {
-  z-index: 1;
-}
-.ari-stack-card:nth-child(2) {
-  z-index: 2;
-  top: calc(var(--header-h) + 248px);
-}
-.ari-stack-card:nth-child(3) {
-  z-index: 3;
-  top: calc(var(--header-h) + 260px);
-}
-.ari-stack-card:nth-child(4) {
-  z-index: 4;
-  top: calc(var(--header-h) + 272px);
 }
 
 /* ---- shared card interior (number, icon, motif, copy, wave) ---- */
@@ -1506,23 +1478,42 @@ a {
   stroke-width: 2;
 }
 
-/* ---- Why ARI Works : collapse to plain single column ---- */
-@media (max-width: 800px) {
+/* ---- Why ARI Works : pinned stage (desktop + motion) ---- */
+@media (min-width: 801px) and (prefers-reduced-motion: no-preference) {
+  .ari-diff-scroll {
+    position: relative;
+    height: 220vh;
+  }
+  .ari-diff-sticky {
+    position: sticky;
+    top: var(--header-h);
+    height: calc(100vh - var(--header-h));
+    display: flex;
+    align-items: center;
+  }
+  .ari-diff-sticky .ari-difference-inner {
+    width: 100%;
+  }
   .ari-difference-header {
-    position: static;
-    top: auto;
+    margin-bottom: clamp(20px, 3vh, 36px);
   }
   .ari-card-stack {
-    gap: 22px;
-    padding-bottom: 0;
+    position: relative;
+    display: block;
+    height: clamp(320px, 50vh, 430px);
+    max-width: 940px;
   }
   .ari-stack-card {
-    position: relative;
-    top: auto;
-    min-height: auto;
+    position: absolute;
+    inset: 0;
+    min-height: 0;
+    will-change: transform, opacity;
+    transition: box-shadow 0.45s var(--reveal-ease);
   }
-  .ari-stack-card:not(:first-child) {
-    margin-top: 0;
+  .ari-stack-card.is-active {
+    border-color: rgba(36, 198, 55, 0.6);
+    box-shadow: 0 28px 90px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(36, 198, 55, 0.3), 0 0 48px rgba(36, 198, 55, 0.2);
   }
 }
 
