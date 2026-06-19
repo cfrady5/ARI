@@ -1383,9 +1383,9 @@ a {
   gap: 28px;
   max-width: 920px;
   margin: 0 auto;
-  /* extra room so the final card dwells in place below the pinned header
-     before the whole section scrolls away */
-  padding-bottom: clamp(60px, 16vh, 180px);
+  /* small tail so the last card registers, then the deck releases quickly
+     instead of staying stuck while you scroll empty space */
+  padding-bottom: clamp(12px, 3vh, 32px);
 }
 .ari-stack-card {
   position: sticky;
