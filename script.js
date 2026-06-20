@@ -495,7 +495,7 @@
       for (var m = 0; m < nv; m++) {
         ctx.globalAlpha = val[m];
         if (vflag[m] !== cur) {
-          ctx.fillStyle = vflag[m] ? "rgb(150,255,90)" : "rgb(52,200,66)";
+          ctx.fillStyle = vflag[m] ? "rgb(150,255,90)" : "rgb(59, 174, 72)";
           cur = vflag[m];
         }
         var s = vsz[m];
