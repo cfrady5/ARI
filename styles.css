@@ -546,26 +546,53 @@ a {
   color: rgba(59, 174, 72, 0.5);
 }
 
-/* Initiative cards — logo-led, linking to each program */
-.init-logo {
+/* Initiative cards — photo background + white logo + one-line description */
+.init-card {
+  padding: 0;
+  overflow: hidden;
+}
+.init-media {
+  position: relative;
   display: flex;
   align-items: center;
-  min-height: 50px;
-  margin-bottom: 1.1rem;
+  justify-content: center;
+  min-height: 168px;
+  padding: 1.5rem;
+  /* grey placeholder box; --card-bg (set inline) becomes the photo once
+     an image is dropped into assets/initiative-assets/ */
+  background-color: #232826;
+  background-image: linear-gradient(rgba(3, 6, 5, 0.45), rgba(3, 6, 5, 0.62)),
+    var(--card-bg, none);
+  background-size: cover;
+  background-position: center;
+  border-bottom: 1px solid var(--card-border);
 }
-.init-logo img {
-  max-height: 44px;
-  max-width: 200px;
+.init-logo-img {
+  max-height: 50px;
+  max-width: 72%;
   object-fit: contain;
-  opacity: 0.95;
   filter: brightness(0) invert(1);
+  position: relative;
+  z-index: 1;
 }
-.init-logo--ari img {
-  max-height: 34px;
+.init-logo-img--ari {
+  max-height: 38px;
   filter: none;
 }
+.init-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 1.4rem 1.6rem 1.6rem;
+}
+.init-desc {
+  color: var(--muted);
+  font-size: 0.98rem;
+  font-weight: 600;
+  flex: 1;
+}
 .init-card .init-visit {
-  margin-top: 1.25rem;
+  margin-top: 1.1rem;
 }
 
 /* Featured initiative banner (RAM) */
