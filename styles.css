@@ -584,16 +584,34 @@ a {
   max-height: 96px;
   filter: none;
 }
-/* Photo-forward media box: shows the whole image (no crop) at its own aspect ratio */
+/* Photo-forward media box: shows the whole image (no crop) with the logo on top */
 .init-media--fit {
-  aspect-ratio: 760 / 507;
+  display: block;
+  position: relative;
   min-height: 0;
   padding: 0;
-  background-color: #0b0f0e;
-  background-image: var(--card-bg, none);
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
+  background: #0b0f0e;
+}
+.init-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.init-media--fit::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(3, 6, 5, 0.25), rgba(3, 6, 5, 0.5));
+  z-index: 1;
+}
+.init-media--fit .init-logo-img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  max-height: 56%;
+  max-width: 74%;
 }
 .init-body {
   display: flex;
