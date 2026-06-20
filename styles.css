@@ -556,8 +556,8 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 184px;
-  padding: 1.25rem 1.5rem;
+  min-height: 232px;
+  padding: 1.5rem;
   /* grey placeholder box; --card-bg (set inline) becomes the photo once
      an image is dropped into assets/initiative-assets/ */
   background-color: #232826;
@@ -568,12 +568,17 @@ a {
   border-bottom: 1px solid var(--card-border);
 }
 .init-logo-img {
-  max-height: 120px;
-  max-width: 88%;
+  max-height: 148px;
+  max-width: 90%;
   object-fit: contain;
   filter: brightness(0) invert(1);
   position: relative;
   z-index: 1;
+}
+/* Detailed badge logos (e.g. the UAS shield) need extra height to stay legible */
+.init-logo-img--badge {
+  max-height: 200px;
+  max-width: 84%;
 }
 .init-logo-img--ari {
   max-height: 96px;

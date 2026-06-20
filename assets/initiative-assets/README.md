@@ -1,7 +1,8 @@
 # Initiative Background Images
 
 Drop background photos here to fill the grey logo boxes on the **Initiatives** page
-(`initiatives/index.html`). Each card shows a white knockout logo over a dark,
+(`initiatives/index.html`) and the Featured Initiatives cards on the **home page**
+(`index.html`). Each card shows a white knockout logo over a dark,
 slightly-dimmed background image. Until a file exists, the card shows a plain
 grey box (`#232826`) behind the logo — that's the intended placeholder.
 
@@ -12,6 +13,7 @@ once you upload a file with the matching name it appears automatically:
 
 | Initiative | Filename |
 | --- | --- |
+| Rapid Acquisition Marketplace | `ram.jpg` |
 | Heartland BioWorks | `heartland-bioworks.jpg` |
 | Silicon Crossroads | `silicon-crossroads.jpg` |
 | DARPAConnect | `darpaconnect.jpg` |
