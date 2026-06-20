@@ -8,9 +8,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../styles.css?v=64" />
+  <link rel="stylesheet" href="../styles.css?v=65" />
 </head>
 <body class="portal-body">
+  <div class="wave-wrap" aria-hidden="true"><canvas id="heroWave"></canvas><div class="wave-fade"></div></div>
   <header class="portal-header">
     <a class="brand" href="../" aria-label="ARI home"><img class="brand-logo" src="../assets/ari-logo.png" alt="ARI" /></a>
     <span class="portal-kicker">Employee Portal</span>
@@ -129,6 +130,7 @@
     </section>
   </main>
 
+  <script src="../script.js?v=65"></script>
   <script type="module">
     const $ = (id) => document.getElementById(id);
     let supabase, formatEventDate;
@@ -137,6 +139,7 @@
       Object.values(views).forEach((v) => (v.hidden = true));
       views[view].hidden = false;
       $("userBar").hidden = view !== "dash";
+      document.body.classList.toggle("portal-dash", view === "dash");
     }
 
     /* ---------------- Auth ---------------- */
