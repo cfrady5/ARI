@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../styles.css?v=70" />
+  <link rel="stylesheet" href="../styles.css?v=72" />
 </head>
 <body>
   <header class="site-header" id="siteHeader">
@@ -54,6 +54,19 @@
         </div>
       </div>
     </section>
+
+    <section class="section follow-section">
+      <div class="container">
+        <div class="follow-cta reveal">
+          <h2>Follow ARI to stay up to date</h2>
+          <p class="section-body">Get future insights, announcements, and coverage from across the ARI network as they publish.</p>
+          <div class="follow-links">
+            <a class="follow-btn" href="https://www.linkedin.com/company/applied-research-institute/" target="_blank" rel="noopener" aria-label="ARI on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>LinkedIn</a>
+            <a class="follow-btn" href="https://x.com/ARI_Innovation" target="_blank" rel="noopener" aria-label="ARI on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>X</a>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer class="site-footer">
@@ -64,7 +77,7 @@
     </div>
     <div class="footer-bottom"><div class="footer-bottom-inner"><p>&copy; <span id="year"></span> Applied Research Institute. All rights reserved.</p><div class="footer-legal"><a href="../privacy/">Privacy</a><a href="../terms/">Terms</a><a href="../accessibility/">Accessibility</a></div></div></div>
   </footer>
-  <script src="../script.js?v=70"></script>
+  <script src="../script.js?v=72"></script>
   <script type="module">
     import { supabase } from "../assets/supabase.js";
     const grid = document.getElementById("postsGrid");
@@ -79,9 +92,21 @@
       if (/^https?:\/\//i.test(v)) return v;
       return "../" + v.replace(/^(\.\.\/|\.\/|\/)+/, "");
     }
+    // Where a card links: the full-story page if a body exists, otherwise an
+    // external link if provided, otherwise still the story page (shows summary).
+    function postHref(p) {
+      if ((p.body && p.body.trim()) || !p.link) {
+        return "article.html?id=" + encodeURIComponent(p.id);
+      }
+      return p.link;
+    }
     function card(p) {
-      const a = document.createElement("article");
+      const href = postHref(p);
+      const external = /^https?:\/\//i.test(href);
+      const a = document.createElement("a");
       a.className = "card hover post-card";
+      a.href = href;
+      if (external) { a.target = "_blank"; a.rel = "noopener noreferrer"; }
       const slug = typeSlug(p.category);
       const cover = document.createElement("span");
       cover.className = "post-cover post-cover--" + slug;
@@ -98,17 +123,10 @@
       h.textContent = p.title || "";
       const sum = document.createElement("p");
       sum.textContent = p.summary || "";
-      body.append(tag, h, sum);
-      if (p.link) {
-        const l = document.createElement("a");
-        l.className = "link-arrow";
-        l.style.marginTop = "1.1rem";
-        l.href = p.link;
-        l.target = "_blank";
-        l.rel = "noopener noreferrer";
-        l.textContent = "Read more →";
-        body.append(l);
-      }
+      const more = document.createElement("span");
+      more.className = "link-arrow post-readmore";
+      more.textContent = external ? "View coverage →" : "Read story →";
+      body.append(tag, h, sum, more);
       a.append(cover, body);
       return a;
     }

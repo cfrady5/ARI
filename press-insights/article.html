@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Press &amp; Insights | Applied Research Institute (ARI)</title>
+  <meta name="description" content="A story from the ARI network." />
+  <meta property="og:title" content="Press &amp; Insights | Applied Research Institute (ARI)" />
+  <meta property="og:type" content="article" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles.css?v=72" />
+</head>
+<body>
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner">
+      <a href="../" class="brand" aria-label="ARI — Applied Research Institute, home">
+        <img class="brand-logo" src="../assets/ari-logo.png" alt="ARI" />
+        <span class="brand-divider" aria-hidden="true"></span>
+        <span class="brand-wordmark"><span>Applied</span><span>Research</span><span>Institute</span></span>
+      </a>
+      <nav class="main-nav" id="mainNav" aria-label="Primary">
+        <a href="../about/">About</a>
+        <a href="../initiatives/">Initiatives</a>
+        <a href="../press-insights/" class="active" aria-current="page">Press &amp; Insights</a>
+        <a href="../events/">Events</a>
+        <a href="../contact/" class="btn btn-secondary nav-cta">Contact</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="mainNav" aria-label="Toggle navigation menu"><span></span><span></span><span></span></button>
+    </div>
+  </header>
+
+  <main>
+    <article class="article-page">
+      <div class="container narrow">
+        <a class="article-back link-arrow" href="./">&larr; Back to Press &amp; Insights</a>
+        <div id="articleRoot"><p class="article-loading">Loading…</p></div>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid" style="padding-left:0;padding-right:0">
+      <div class="footer-brand"><div class="footer-brand-top"><a href="../" class="brand" aria-label="ARI home"><img class="brand-logo" src="../assets/ari-logo.png" alt="ARI" /></a><a class="footer-social" href="https://www.linkedin.com/company/applied-research-institute/" target="_blank" rel="noopener" aria-label="ARI on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg></a></div><p>Applied Research Institute catalyzes opportunities that enhance national security, accelerate innovation, and drive economic prosperity.</p><p class="mission">ARI catalyzes opportunities that enhance national security and drive economic prosperity.</p></div>
+      <nav class="footer-col" aria-label="Explore"><h4>Explore</h4><a href="../about/">About</a><a href="../initiatives/">Initiatives</a><a href="../press-insights/">Press &amp; Insights</a><a href="../events/">Events</a></nav>
+      <nav class="footer-col" aria-label="Connect"><h4>Connect</h4><a href="../contact/">Contact ARI</a><a class="footer-portal" href="../portal/">Employee Portal</a></nav>
+    </div>
+    <div class="footer-bottom"><div class="footer-bottom-inner"><p>&copy; <span id="year"></span> Applied Research Institute. All rights reserved.</p><div class="footer-legal"><a href="../privacy/">Privacy</a><a href="../terms/">Terms</a><a href="../accessibility/">Accessibility</a></div></div></div>
+  </footer>
+  <script src="../script.js?v=72"></script>
+  <script type="module">
+    import { supabase } from "../assets/supabase.js";
+    const root = document.getElementById("articleRoot");
+    const id = new URLSearchParams(location.search).get("id");
+
+    function typeSlug(c) {
+      return (c || "update").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    }
+    function coverSrc(v) {
+      if (!v) return null;
+      v = String(v).trim();
+      if (/^https?:\/\//i.test(v)) return v;
+      return "../" + v.replace(/^(\.\.\/|\.\/|\/)+/, "");
+    }
+    function fmtDate(d) {
+      try { return new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }); }
+      catch (e) { return ""; }
+    }
+    function msg(text) {
+      root.innerHTML = "";
+      const p = document.createElement("p");
+      p.className = "article-loading";
+      p.textContent = text;
+      root.appendChild(p);
+    }
+
+    (async () => {
+      if (!id) { msg("Article not found."); return; }
+      let data, error;
+      try {
+        ({ data, error } = await supabase.from("posts").select("*").eq("id", id).maybeSingle());
+      } catch (e) {
+        msg("Couldn't load this article — please check your connection and refresh.");
+        return;
+      }
+      if (error || !data) { msg("This article isn't available."); return; }
+
+      document.title = data.title + " | Press & Insights | ARI";
+      root.innerHTML = "";
+
+      const slug = typeSlug(data.category);
+      const cover = document.createElement("div");
+      cover.className = "article-cover post-cover--" + slug;
+      const src = coverSrc(data.cover_image) || "../assets/post-covers/" + slug + ".jpg";
+      cover.style.backgroundImage = "url('" + src.replace(/'/g, "%27") + "')";
+
+      const meta = document.createElement("p");
+      meta.className = "article-meta";
+      const tag = document.createElement("span");
+      tag.className = "tag";
+      tag.textContent = data.category || "Update";
+      meta.appendChild(tag);
+      if (data.published_at) {
+        const t = document.createElement("span");
+        t.className = "article-date";
+        t.textContent = fmtDate(data.published_at);
+        meta.appendChild(t);
+      }
+
+      const h1 = document.createElement("h1");
+      h1.className = "article-title";
+      h1.textContent = data.title || "";
+
+      const bodyWrap = document.createElement("div");
+      bodyWrap.className = "article-body";
+      const text = data.body && data.body.trim() ? data.body : data.summary || "";
+      String(text).split(/\n\s*\n/).forEach((par) => {
+        const t = par.trim();
+        if (!t) return;
+        const p = document.createElement("p");
+        p.style.whiteSpace = "pre-line";
+        p.textContent = t;
+        bodyWrap.appendChild(p);
+      });
+
+      root.append(cover, meta, h1, bodyWrap);
+
+      if (data.link) {
+        const wrap = document.createElement("p");
+        wrap.style.marginTop = "1.75rem";
+        const btn = document.createElement("a");
+        btn.className = "btn btn-secondary";
+        btn.href = data.link;
+        btn.target = "_blank";
+        btn.rel = "noopener noreferrer";
+        btn.textContent = "View original coverage →";
+        wrap.appendChild(btn);
+        root.appendChild(wrap);
+      }
+    })();
+  </script>
+</body>
+</html>

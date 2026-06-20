@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../styles.css?v=70" />
+  <link rel="stylesheet" href="../styles.css?v=72" />
 </head>
 <body class="portal-body">
   <div class="wave-wrap" aria-hidden="true"><canvas id="heroWave"></canvas><div class="wave-fade"></div></div>
@@ -69,9 +69,10 @@
               <option>In the Media</option>
             </select>
           </label>
-          <label class="portal-field">Summary<textarea id="p_summary" rows="3" required></textarea></label>
+          <label class="portal-field">Summary (short teaser shown on the card)<textarea id="p_summary" rows="2" required></textarea></label>
+          <label class="portal-field">Full story (optional)<textarea id="p_body" rows="12" placeholder="The complete article — shown when someone opens the post. Separate paragraphs with a blank line. Leave blank to just show the summary (or link out)."></textarea></label>
           <label class="portal-field">Cover image (optional)<input type="text" id="p_cover" placeholder="https://…  or  assets/post-covers/name.jpg" /></label>
-          <label class="portal-field">Link (optional)<input type="url" id="p_link" placeholder="https://…" /></label>
+          <label class="portal-field">External link (optional — for coverage hosted elsewhere)<input type="url" id="p_link" placeholder="https://…" /></label>
           <label class="portal-check"><input type="checkbox" id="p_published" checked /> Published (visible on the public site)</label>
           <div class="portal-actions">
             <button class="btn btn-primary" type="submit" id="postSubmit">Publish</button>
@@ -79,7 +80,20 @@
             <span class="portal-msg" id="postMsg" role="status"></span>
           </div>
         </form>
-        <h3 class="portal-list-title">All posts</h3>
+        <div class="portal-list-head">
+          <h3 class="portal-list-title">All posts</h3>
+          <div class="portal-filters">
+            <input type="search" id="postSearch" class="portal-search" placeholder="Search posts…" />
+            <select id="postFilter" class="portal-filter">
+              <option value="">All categories</option>
+              <option>Press Release</option>
+              <option>Initiative Update</option>
+              <option>Report</option>
+              <option>Op-Ed</option>
+              <option>In the Media</option>
+            </select>
+          </div>
+        </div>
         <div class="portal-list" id="postList"></div>
       </div>
 
@@ -130,7 +144,7 @@
     </section>
   </main>
 
-  <script src="../script.js?v=70"></script>
+  <script src="../script.js?v=72"></script>
   <script type="module">
     const $ = (id) => document.getElementById(id);
     let supabase, formatEventDate;
@@ -225,18 +239,36 @@
 
     /* ---------------- Posts ---------------- */
     const postForm = $("postForm");
+    let allPosts = [];
     async function loadPosts() {
       const { data, error } = await supabase.from("posts").select("*").order("published_at", { ascending: false });
+      const list = $("postList");
+      if (error) { list.innerHTML = ""; list.textContent = error.message; return; }
+      allPosts = data || [];
+      renderPosts();
+    }
+    function renderPosts() {
       const list = $("postList"); list.innerHTML = "";
-      if (error) { list.textContent = error.message; return; }
-      if (!data.length) { list.innerHTML = '<p class="portal-empty">No posts yet.</p>'; return; }
-      data.forEach((p) => list.append(itemRow(
+      if (!allPosts.length) { list.innerHTML = '<p class="portal-empty">No posts yet.</p>'; return; }
+      const q = ($("postSearch").value || "").trim().toLowerCase();
+      const cat = $("postFilter").value;
+      const rows = allPosts.filter((p) =>
+        (!cat || p.category === cat) &&
+        (!q ||
+          (p.title || "").toLowerCase().includes(q) ||
+          (p.summary || "").toLowerCase().includes(q) ||
+          (p.body || "").toLowerCase().includes(q))
+      );
+      if (!rows.length) { list.innerHTML = '<p class="portal-empty">No posts match your search.</p>'; return; }
+      rows.forEach((p) => list.append(itemRow(
         p.title,
         p.category + (p.published ? "" : " · draft"),
         () => editPost(p),
         () => delPost(p.id)
       )));
     }
+    $("postSearch").addEventListener("input", renderPosts);
+    $("postFilter").addEventListener("change", renderPosts);
     function resetPostForm() {
       postForm.reset(); $("p_id").value = ""; $("p_published").checked = true;
       $("postFormTitle").textContent = "New press release / insight";
@@ -245,7 +277,7 @@
     function editPost(p) {
       $("p_id").value = p.id; $("p_title").value = p.title || ""; $("p_category").value = p.category || "Press Release";
       $("p_summary").value = p.summary || ""; $("p_link").value = p.link || ""; $("p_published").checked = !!p.published;
-      $("p_cover").value = p.cover_image || "";
+      $("p_cover").value = p.cover_image || ""; $("p_body").value = p.body || "";
       $("postFormTitle").textContent = "Edit post"; $("postSubmit").textContent = "Save changes";
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -261,6 +293,7 @@
         title: $("p_title").value.trim(),
         category: $("p_category").value,
         summary: $("p_summary").value.trim(),
+        body: $("p_body").value.trim() || null,
         cover_image: $("p_cover").value.trim() || null,
         link: $("p_link").value.trim() || null,
         published: $("p_published").checked,
