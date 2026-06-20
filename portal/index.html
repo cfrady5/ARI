@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../styles.css?v=75" />
+  <link rel="stylesheet" href="../styles.css?v=76" />
 </head>
 <body class="portal-body">
   <div class="wave-wrap" aria-hidden="true"><canvas id="heroWave"></canvas><div class="wave-fade"></div></div>
@@ -80,6 +80,35 @@
             <span class="portal-msg" id="postMsg" role="status"></span>
           </div>
         </form>
+
+        <details class="portal-import" id="postImport">
+          <summary>Bulk import posts from CSV</summary>
+          <div class="portal-import-body">
+            <p class="portal-sub">Upload a <code>.csv</code> with a header row, assign each column to a field, then import. <strong>Title</strong> is required; everything else is optional.</p>
+            <label class="portal-field">CSV file<input type="file" id="postCsvFile" accept=".csv,text/csv" /></label>
+            <div id="postMapWrap" hidden>
+              <h4 class="portal-map-title">Assign columns to fields</h4>
+              <div class="portal-map-grid" id="postMapGrid"></div>
+              <label class="portal-field">Default category (used when the category cell is blank or unmapped)
+                <select id="postImportCategory">
+                  <option>Press Release</option>
+                  <option>Initiative Update</option>
+                  <option>Report</option>
+                  <option>Op-Ed</option>
+                  <option>In the Media</option>
+                </select>
+              </label>
+              <label class="portal-check"><input type="checkbox" id="postImportPublished" checked /> Import rows as published (unless a Published column says otherwise)</label>
+              <div class="portal-import-preview" id="postImportPreview"></div>
+              <div class="portal-actions">
+                <button class="btn btn-primary" type="button" id="postImportBtn">Import <span id="postImportCount"></span></button>
+                <button class="btn btn-secondary" type="button" id="postImportCancel">Cancel</button>
+                <span class="portal-msg" id="postImportMsg" role="status"></span>
+              </div>
+            </div>
+          </div>
+        </details>
+
         <div class="portal-list-head">
           <h3 class="portal-list-title">All posts</h3>
           <div class="portal-filters">
@@ -135,6 +164,29 @@
             <span class="portal-msg" id="eventMsg" role="status"></span>
           </div>
         </form>
+
+        <details class="portal-import" id="eventImport">
+          <summary>Bulk import events from CSV</summary>
+          <div class="portal-import-body">
+            <p class="portal-sub">Upload a <code>.csv</code> with a header row, assign each column to a field, then import. <strong>Title</strong> and <strong>Start date</strong> are required. Dates accept formats like <code>2026-10-14</code>, <code>10/14/2026</code>, or <code>October 14, 2026</code>.</p>
+            <label class="portal-field">CSV file<input type="file" id="eventCsvFile" accept=".csv,text/csv" /></label>
+            <div id="eventMapWrap" hidden>
+              <h4 class="portal-map-title">Assign columns to fields</h4>
+              <div class="portal-map-grid" id="eventMapGrid"></div>
+              <label class="portal-field">Default type (used when the type cell is blank or unmapped)
+                <input type="text" id="eventImportType" list="eventTypes" placeholder="e.g. Industry Day" />
+              </label>
+              <label class="portal-check"><input type="checkbox" id="eventImportPublished" checked /> Import rows as published (unless a Published column says otherwise)</label>
+              <div class="portal-import-preview" id="eventImportPreview"></div>
+              <div class="portal-actions">
+                <button class="btn btn-primary" type="button" id="eventImportBtn">Import <span id="eventImportCount"></span></button>
+                <button class="btn btn-secondary" type="button" id="eventImportCancel">Cancel</button>
+                <span class="portal-msg" id="eventImportMsg" role="status"></span>
+              </div>
+            </div>
+          </div>
+        </details>
+
         <h3 class="portal-list-title">All events</h3>
         <div class="portal-list" id="eventList"></div>
       </div>
@@ -157,7 +209,7 @@
     </section>
   </main>
 
-  <script src="../script.js?v=75"></script>
+  <script src="../script.js?v=76"></script>
   <script type="module">
     const $ = (id) => document.getElementById(id);
     let supabase, formatEventDate;
@@ -385,6 +437,225 @@
       setTimeout(() => (msg.textContent = ""), 2500);
     });
     $("eventCancel").addEventListener("click", resetEventForm);
+
+    /* ---------------- CSV import (posts + events) ---------------- */
+    // RFC-4180-ish parser: handles quoted fields, embedded commas/newlines, "" escapes.
+    function parseCSV(text) {
+      text = text.replace(/^﻿/, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      const rows = []; let row = [], field = "", inQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (inQuotes) {
+          if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQuotes = false; }
+          else field += c;
+        } else if (c === '"') { inQuotes = true; }
+        else if (c === ",") { row.push(field); field = ""; }
+        else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+        else field += c;
+      }
+      if (field !== "" || row.length) { row.push(field); rows.push(row); }
+      return rows.filter((r) => r.some((cell) => (cell || "").trim() !== ""));
+    }
+
+    const norm = (s) => (s || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    function guessColumn(field, headers) {
+      const aliases = field.aliases.map(norm);
+      // 1) exact header match
+      let idx = headers.findIndex((h) => aliases.includes(norm(h)));
+      if (idx !== -1) return idx;
+      // 2) whole-word containment (avoids "to" matching "location", etc.)
+      idx = headers.findIndex((h) => {
+        const hw = " " + norm(h) + " ";
+        return aliases.some((a) => a && hw.includes(" " + a + " "));
+      });
+      return idx;
+    }
+
+    function toISODate(v) {
+      const s = (v == null ? "" : String(v)).trim();
+      if (!s) return null;
+      let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+      if (m) return `${m[1]}-${String(m[2]).padStart(2, "0")}-${String(m[3]).padStart(2, "0")}`;
+      m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+      if (m) { let [, mo, da, yr] = m; if (yr.length === 2) yr = "20" + yr; return `${yr}-${String(mo).padStart(2, "0")}-${String(da).padStart(2, "0")}`; }
+      const d = new Date(s);
+      if (!isNaN(d.getTime())) return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      return null;
+    }
+
+    function toBool(v, fallback) {
+      const s = (v == null ? "" : String(v)).trim().toLowerCase();
+      if (!s) return fallback;
+      if (["1", "true", "yes", "y", "published", "live", "active", "public"].includes(s)) return true;
+      if (["0", "false", "no", "n", "draft", "hidden", "unpublished", "inactive"].includes(s)) return false;
+      return fallback;
+    }
+
+    const POST_FIELDS = [
+      { key: "title", label: "Title", required: true, aliases: ["title", "headline", "name", "post title"] },
+      { key: "category", label: "Category", aliases: ["category", "type", "tag", "topic", "section"] },
+      { key: "summary", label: "Summary / teaser", aliases: ["summary", "teaser", "excerpt", "description", "subtitle", "dek", "blurb"] },
+      { key: "body", label: "Full story / body", aliases: ["body", "content", "article", "story", "full story", "text"] },
+      { key: "cover_image", label: "Cover image", aliases: ["cover", "cover image", "image", "photo", "thumbnail", "cover_image"] },
+      { key: "link", label: "External link", aliases: ["link", "url", "external link", "source", "coverage", "href"] },
+      { key: "published_at", label: "Date published", isDate: true, omitIfEmpty: true, aliases: ["date", "published at", "publish date", "pubdate", "date published", "published_at"] },
+      { key: "published", label: "Published (yes/no)", isBool: true, aliases: ["published", "status", "live", "active", "visible"] },
+    ];
+    const EVENT_FIELDS = [
+      { key: "title", label: "Title", required: true, aliases: ["title", "name", "event", "event title"] },
+      { key: "event_type", label: "Type", aliases: ["type", "event type", "category", "event_type", "kind", "track"] },
+      { key: "platform", label: "Platform", aliases: ["platform", "format", "venue type", "mode", "channel"] },
+      { key: "access", label: "Access", aliases: ["access", "audience", "visibility", "admission"] },
+      { key: "start_date", label: "Start date", required: true, isDate: true, aliases: ["start", "start date", "date", "start_date", "begin", "when", "from"] },
+      { key: "end_date", label: "End date", isDate: true, aliases: ["end", "end date", "end_date", "finish", "through", "to"] },
+      { key: "time", label: "Time", aliases: ["time", "start time", "hours", "schedule"] },
+      { key: "location", label: "Location", aliases: ["location", "city", "place", "venue", "where", "address"] },
+      { key: "description", label: "Description", aliases: ["description", "desc", "summary", "details", "about", "overview"] },
+      { key: "register_url", label: "Registration link", aliases: ["register", "registration", "url", "link", "register_url", "rsvp", "signup", "tickets"] },
+      { key: "cta_label", label: "CTA label", aliases: ["cta", "cta label", "button", "button label", "cta_label"] },
+      { key: "published", label: "Published (yes/no)", isBool: true, aliases: ["published", "status", "live", "active", "visible"] },
+    ];
+
+    function buildImportRows(fields, headers, dataRows, mapping, opts) {
+      const out = [], skipped = [];
+      dataRows.forEach((cells, idx) => {
+        const obj = {};
+        fields.forEach((f) => {
+          const col = mapping[f.key];
+          const raw = (col != null && col >= 0 && col < cells.length) ? cells[col] : "";
+          const val = (raw == null ? "" : String(raw)).trim();
+          if (f.isBool) obj[f.key] = toBool(val, opts.defaultPublished);
+          else if (f.isDate) obj[f.key] = toISODate(val);
+          else obj[f.key] = val || null;
+        });
+        if ("category" in obj && !obj.category && opts.defaultCategory) obj.category = opts.defaultCategory;
+        if ("event_type" in obj && !obj.event_type && opts.defaultType) obj.event_type = opts.defaultType;
+        // Drop empty date/timestamp columns so DB defaults (e.g. now()) apply.
+        fields.forEach((f) => { if (f.omitIfEmpty && obj[f.key] == null) delete obj[f.key]; });
+        const missing = fields.filter((f) => f.required && !obj[f.key]);
+        if (missing.length) { skipped.push({ row: idx + 2, reason: "missing " + missing.map((f) => f.label).join(", ") }); return; }
+        out.push(obj);
+      });
+      return { out, skipped };
+    }
+
+    async function bulkInsert(table, rows) {
+      const size = 100; let inserted = 0;
+      for (let i = 0; i < rows.length; i += size) {
+        const slice = rows.slice(i, i + size);
+        const { error } = await supabase.from(table).insert(slice);
+        if (error) throw error;
+        inserted += slice.length;
+      }
+      return inserted;
+    }
+
+    function renderMapGrid(gridEl, fields, headers, mapping, onChange) {
+      gridEl.innerHTML = "";
+      fields.forEach((f) => {
+        const wrap = document.createElement("label");
+        wrap.className = "portal-map-row";
+        const lab = document.createElement("span");
+        lab.className = "portal-map-label";
+        lab.textContent = f.label + (f.required ? " *" : "");
+        const sel = document.createElement("select");
+        sel.className = "portal-filter";
+        const none = document.createElement("option");
+        none.value = "-1"; none.textContent = "— skip —";
+        sel.append(none);
+        headers.forEach((h, i) => {
+          const o = document.createElement("option");
+          o.value = String(i); o.textContent = h || ("Column " + (i + 1));
+          sel.append(o);
+        });
+        sel.value = String(mapping[f.key] != null ? mapping[f.key] : -1);
+        sel.addEventListener("change", () => { mapping[f.key] = parseInt(sel.value, 10); onChange(); });
+        wrap.append(lab, sel);
+        gridEl.append(wrap);
+      });
+    }
+
+    function setupImporter(cfg) {
+      const fileInput = $(cfg.fileInput);
+      if (!fileInput) return;
+      let headers = [], dataRows = [], mapping = {};
+
+      function readOpts() {
+        const opts = { defaultPublished: $(cfg.publishedToggle).checked };
+        if (cfg.defaultInput) {
+          const dv = ($(cfg.defaultInput).value || "").trim();
+          if (cfg.defaultKey === "category") opts.defaultCategory = dv;
+          if (cfg.defaultKey === "event_type") opts.defaultType = dv;
+        }
+        return opts;
+      }
+      function updatePreview() {
+        const { out, skipped } = buildImportRows(cfg.fields, headers, dataRows, mapping, readOpts());
+        $(cfg.count).textContent = out.length ? `(${out.length})` : "";
+        $(cfg.importBtn).disabled = !out.length;
+        let html = `<p class="portal-sub"><strong>${out.length}</strong> row${out.length === 1 ? "" : "s"} ready` + (skipped.length ? ` · <strong>${skipped.length}</strong> skipped` : "") + ".</p>";
+        if (skipped.length) html += '<ul class="portal-skip">' + skipped.slice(0, 6).map((s) => `<li>Row ${s.row}: ${s.reason}</li>`).join("") + (skipped.length > 6 ? `<li>…and ${skipped.length - 6} more</li>` : "") + "</ul>";
+        $(cfg.preview).innerHTML = html;
+      }
+      function resetImporter() {
+        fileInput.value = ""; headers = []; dataRows = []; mapping = {};
+        $(cfg.mapWrap).hidden = true; $(cfg.preview).innerHTML = ""; $(cfg.count).textContent = "";
+      }
+
+      fileInput.addEventListener("change", async () => {
+        const file = fileInput.files[0];
+        $(cfg.msg).textContent = "";
+        if (!file) return;
+        let parsed;
+        try { parsed = parseCSV(await file.text()); }
+        catch (e) { $(cfg.msg).textContent = "Could not read that file."; return; }
+        if (parsed.length < 2) { $(cfg.msg).textContent = "CSV needs a header row plus at least one data row."; $(cfg.mapWrap).hidden = true; return; }
+        headers = parsed[0].map((h) => (h || "").trim());
+        dataRows = parsed.slice(1);
+        mapping = {};
+        cfg.fields.forEach((f) => { mapping[f.key] = guessColumn(f, headers); });
+        renderMapGrid($(cfg.mapGrid), cfg.fields, headers, mapping, updatePreview);
+        $(cfg.mapWrap).hidden = false;
+        updatePreview();
+      });
+
+      $(cfg.publishedToggle).addEventListener("change", updatePreview);
+      if (cfg.defaultInput) $(cfg.defaultInput).addEventListener("input", updatePreview);
+      $(cfg.cancelBtn).addEventListener("click", resetImporter);
+
+      $(cfg.importBtn).addEventListener("click", async () => {
+        const { out } = buildImportRows(cfg.fields, headers, dataRows, mapping, readOpts());
+        if (!out.length) return;
+        $(cfg.importBtn).disabled = true;
+        $(cfg.msg).textContent = "Importing…";
+        try {
+          const n = await bulkInsert(cfg.table, out);
+          const noun = cfg.table === "posts" ? "post" : "event";
+          $(cfg.msg).textContent = `Imported ${n} ${noun}${n === 1 ? "" : "s"}.`;
+          resetImporter();
+          cfg.onDone();
+          setTimeout(() => ($(cfg.msg).textContent = ""), 4000);
+        } catch (err) {
+          $(cfg.msg).textContent = (err && err.message) || "Import failed.";
+          $(cfg.importBtn).disabled = false;
+        }
+      });
+    }
+
+    setupImporter({
+      table: "posts", fields: POST_FIELDS, onDone: () => loadPosts(),
+      fileInput: "postCsvFile", mapWrap: "postMapWrap", mapGrid: "postMapGrid",
+      importBtn: "postImportBtn", count: "postImportCount", cancelBtn: "postImportCancel",
+      msg: "postImportMsg", preview: "postImportPreview", publishedToggle: "postImportPublished",
+      defaultInput: "postImportCategory", defaultKey: "category",
+    });
+    setupImporter({
+      table: "events", fields: EVENT_FIELDS, onDone: () => loadEvents(),
+      fileInput: "eventCsvFile", mapWrap: "eventMapWrap", mapGrid: "eventMapGrid",
+      importBtn: "eventImportBtn", count: "eventImportCount", cancelBtn: "eventImportCancel",
+      msg: "eventImportMsg", preview: "eventImportPreview", publishedToggle: "eventImportPublished",
+      defaultInput: "eventImportType", defaultKey: "event_type",
+    });
 
     /* ---------------- Team ---------------- */
     const teamForm = $("teamForm");

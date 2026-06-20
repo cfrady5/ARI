@@ -2455,3 +2455,81 @@ a {
   .events-calendar-panel { position: static; }
   .events-scroll-list { max-height: none; overflow: visible; padding-right: 0; }
 }
+
+/* ============ Portal CSV import ============ */
+.portal-import {
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.28);
+  margin: 0 0 1.5rem;
+  overflow: hidden;
+}
+.portal-import > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 0.85rem 1.1rem;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+.portal-import > summary::-webkit-details-marker { display: none; }
+.portal-import > summary::before {
+  content: "+";
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--green);
+  transition: transform 0.2s ease;
+}
+.portal-import[open] > summary::before { content: "−"; }
+.portal-import > summary:hover { background: rgba(59, 174, 72, 0.08); }
+.portal-import-body {
+  padding: 0 1.1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  border-top: 1px solid var(--border-soft);
+}
+.portal-import-body code {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 5px;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.85em;
+}
+.portal-map-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-top: 0.2rem;
+}
+.portal-map-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.7rem;
+}
+.portal-map-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.portal-map-label { color: var(--white); }
+.portal-import-preview { font-size: 0.85rem; }
+.portal-import-preview .portal-sub { margin: 0; }
+.portal-skip {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.8rem;
+  background: rgba(255, 80, 80, 0.08);
+  border: 1px solid rgba(255, 120, 120, 0.25);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
