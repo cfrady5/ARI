@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../styles.css?v=73" />
+  <link rel="stylesheet" href="../styles.css?v=74" />
 </head>
 <body>
   <header class="site-header" id="siteHeader">
@@ -37,17 +37,87 @@
         <p class="section-label">ARI Events</p>
         <h1>Where the innovation ecosystem comes <span class="accent">together.</span></h1>
         <p class="section-body">ARI convenes partners across government, industry, academia, and research to advance mission needs, build relationships, and accelerate outcomes.</p>
+        <div class="events-hero-actions">
+          <a href="#eventsDashboard" class="btn btn-primary">View Upcoming Events</a>
+          <a href="#pastEvents" class="btn btn-secondary">Explore Past Events</a>
+        </div>
       </div>
     </section>
 
-    <section class="section">
+    <section class="section events-command-section" id="eventsDashboard">
       <div class="container">
-        <p class="section-label reveal">Upcoming</p>
-        <h2 class="reveal">Don't miss what's <span class="accent">next.</span></h2>
-        <div id="eventsGrid" data-stagger class="grid grid-3" style="margin-top:2.5rem">
-          <article class="card hover reveal"><span class="tag">Flagship Convening</span><h3 style="margin-top:1rem">Midwest Defense Innovation Summit 2026</h3><p>October 14–15, 2026 · Indianapolis, IN</p><p>ARI's flagship convening brings the defense innovation ecosystem together around regional capability and mission needs.</p><a href="../contact/" class="btn btn-primary" style="margin-top:1.25rem">Register</a></article>
-          <article class="card hover reveal"><span class="tag">Industry Day</span><h3 style="margin-top:1rem">Rapid Acquisition Marketplace Industry Day</h3><p>September 9, 2026 · Virtual</p><p>A working session on how to engage the Rapid Acquisition Marketplace and move from opportunity to award.</p><a href="../contact/" class="btn btn-primary" style="margin-top:1.25rem">Register</a></article>
-          <article class="card hover reveal"><span class="tag">Forum</span><h3 style="margin-top:1rem">Heartland BioWorks Workforce Forum</h3><p>August 20, 2026 · Indianapolis, IN</p><p>Industry, academia, and government partners align on the talent pipelines that scale domestic biomanufacturing.</p><a href="../contact/" class="btn btn-primary" style="margin-top:1.25rem">Register</a></article>
+        <div class="events-command-header">
+          <p class="section-label reveal">Events Hub</p>
+          <h2 class="reveal">Plan your <span class="accent">next move.</span></h2>
+          <p class="section-body reveal">Browse upcoming convenings on the left, or select a date on the calendar to see exactly what's happening and when.</p>
+        </div>
+
+        <div class="events-command-grid">
+          <div class="events-list-panel">
+            <div class="events-panel-header">
+              <div>
+                <p class="events-panel-kicker">Upcoming</p>
+                <h3>Next Events</h3>
+              </div>
+              <button type="button" class="events-clear-filter" id="eventsViewAll">View All</button>
+            </div>
+
+            <div class="events-filter-row" id="eventsFilterRow">
+              <button type="button" class="event-filter is-active" data-filter="All">All</button>
+              <button type="button" class="event-filter" data-filter="In-Person">In-Person</button>
+              <button type="button" class="event-filter" data-filter="Webinars">Webinars</button>
+              <button type="button" class="event-filter" data-filter="Workshops">Workshops</button>
+              <button type="button" class="event-filter" data-filter="Member Events">Member Events</button>
+              <button type="button" class="event-filter" data-filter="Invite Only">Invite Only</button>
+            </div>
+
+            <p class="events-selected-date" id="eventsSelectedDate" hidden></p>
+
+            <div class="events-scroll-list" id="eventsScrollList">
+              <p class="events-loading">Loading upcoming events…</p>
+            </div>
+          </div>
+
+          <div class="events-calendar-panel" id="eventsCalendarPanel">
+            <div class="calendar-header">
+              <button type="button" class="calendar-arrow" id="calPrev" aria-label="Previous month">&#8249;</button>
+              <span class="calendar-month-label" id="calMonthLabel">&nbsp;</span>
+              <button type="button" class="calendar-arrow" id="calNext" aria-label="Next month">&#8250;</button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+            <p class="calendar-helper">Green dots mark days with scheduled events. Select a day to filter the list.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section past-events-section" id="pastEvents">
+      <div class="container">
+        <p class="section-label reveal">Past Events</p>
+        <h2 class="reveal">Explore past programs and <span class="accent">recordings.</span></h2>
+        <p class="section-body reveal">A look back at recent ARI convenings. Recaps and recordings are added here as they become available.</p>
+        <div class="grid grid-3" data-stagger style="margin-top:2.5rem">
+          <article class="card reveal">
+            <span class="tag">Flagship Convening</span>
+            <h3 style="margin-top:1rem">Midwest Defense Innovation Summit</h3>
+            <p>Indianapolis, IN</p>
+            <p>The regional defense innovation ecosystem gathered around capability gaps, mission needs, and the pathways that move technology to the field.</p>
+            <span class="event-cta is-disabled" aria-disabled="true" style="margin-top:1.25rem">Recap Coming Soon</span>
+          </article>
+          <article class="card reveal">
+            <span class="tag">Pop-Up</span>
+            <h3 style="margin-top:1rem">DARPAConnect Pop-Up</h3>
+            <p>Virtual</p>
+            <p>An accessible on-ramp to DARPA — how the agency works, how to engage, and how to position for an opportunity, in a single working session.</p>
+            <span class="event-cta is-disabled" aria-disabled="true" style="margin-top:1.25rem">Recording Coming Soon</span>
+          </article>
+          <article class="card reveal">
+            <span class="tag">Webinar Series</span>
+            <h3 style="margin-top:1rem">Member Webinar Series</h3>
+            <p>Virtual</p>
+            <p>A recurring series for ARI members covering acquisition pathways, partnership models, and the people behind the mission.</p>
+            <span class="event-cta is-disabled" aria-disabled="true" style="margin-top:1.25rem">Recordings Coming Soon</span>
+          </article>
         </div>
       </div>
     </section>
@@ -61,40 +131,361 @@
     </div>
     <div class="footer-bottom"><div class="footer-bottom-inner"><p>&copy; <span id="year"></span> Applied Research Institute. All rights reserved.</p><div class="footer-legal"><a href="../privacy/">Privacy</a><a href="../terms/">Terms</a><a href="../accessibility/">Accessibility</a></div></div></div>
   </footer>
-  <script src="../script.js?v=73"></script>
+  <script src="../script.js?v=74"></script>
   <script type="module">
     import { supabase, formatEventDate } from "../assets/supabase.js";
-    const grid = document.getElementById("eventsGrid");
-    function card(ev) {
-      const a = document.createElement("article");
-      a.className = "card hover";
-      const tag = document.createElement("span");
-      tag.className = "tag";
-      tag.textContent = ev.event_type || "Event";
-      const h = document.createElement("h3");
-      h.style.marginTop = "1rem";
-      h.textContent = ev.title || "";
-      const meta = document.createElement("p");
-      const dateStr = formatEventDate(ev.start_date, ev.end_date);
-      meta.textContent = ev.location ? dateStr + " · " + ev.location : dateStr;
-      const desc = document.createElement("p");
-      desc.textContent = ev.description || "";
-      a.append(tag, h, meta, desc);
-      if (ev.register_url) {
-        const btn = document.createElement("a");
-        btn.className = "btn btn-primary";
-        btn.style.marginTop = "1.25rem";
-        btn.href = ev.register_url;
-        btn.textContent = "Register";
-        if (/^https?:/i.test(ev.register_url)) {
-          btn.target = "_blank";
-          btn.rel = "noopener noreferrer";
-        }
-        a.append(btn);
-      }
-      return a;
+
+    const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const MONTHS_LONG = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+    const FALLBACK_EVENTS = [
+      { title: "Heartland BioWorks Workforce Forum", event_type: "Forum", start_date: "2026-08-20", end_date: null, location: "Indianapolis, IN", platform: "In-Person", access: "Public", time: null, description: "Industry, academia, and government partners align on the talent pipelines that scale domestic biomanufacturing.", register_url: null, cta_label: null },
+      { title: "Rapid Acquisition Marketplace Industry Day", event_type: "Industry Day", start_date: "2026-09-09", end_date: null, location: "Virtual", platform: "Zoom", access: "Public", time: null, description: "A working session on how to engage the Rapid Acquisition Marketplace and move from opportunity to award.", register_url: null, cta_label: null },
+      { title: "Midwest Defense Innovation Summit 2026", event_type: "Flagship Convening", start_date: "2026-10-14", end_date: "2026-10-15", location: "Indianapolis, IN", platform: "In-Person", access: "Public", time: null, description: "ARI's flagship convening brings the defense innovation ecosystem together around regional capability and mission needs.", register_url: "https://www.midwestdefenseinnovationsummit.com/", cta_label: null }
+    ];
+
+    let allEvents = [];
+    let selectedDate = null;
+    let selectedFilter = "All";
+    let currentCalendarDate = new Date();
+
+    function normalizeDate(d) {
+      if (!d) return null;
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
     }
-    (async () => {
+
+    function parseLocalDate(value) {
+      if (!value) return null;
+      if (value instanceof Date) return normalizeDate(value);
+      const s = String(value);
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+      const d = new Date(s);
+      return isNaN(d.getTime()) ? null : normalizeDate(d);
+    }
+
+    function toDateKey(value) {
+      const d = parseLocalDate(value);
+      if (!d) return "";
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${d.getFullYear()}-${mm}-${dd}`;
+    }
+
+    function formatMonthDay(value) {
+      const d = parseLocalDate(value);
+      if (!d) return "";
+      return `${MONTHS_SHORT[d.getMonth()]} ${d.getDate()}`;
+    }
+
+    function formatReadableDate(value) {
+      const d = parseLocalDate(value);
+      if (!d) return "";
+      return `${MONTHS_LONG[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+    }
+
+    function sortEvents(list) {
+      return [...list].sort((a, b) => {
+        const da = parseLocalDate(a.start_date);
+        const db = parseLocalDate(b.start_date);
+        if (!da && !db) return 0;
+        if (!da) return 1;
+        if (!db) return -1;
+        return da - db;
+      });
+    }
+
+    function eventCoversDate(ev, dateKey) {
+      const start = parseLocalDate(ev.start_date);
+      if (!start) return false;
+      const end = parseLocalDate(ev.end_date) || start;
+      const target = parseLocalDate(dateKey);
+      if (!target) return false;
+      return target >= start && target <= end;
+    }
+
+    function getEventsForDate(dateKey) {
+      return sortEvents(allEvents.filter((ev) => eventCoversDate(ev, dateKey)));
+    }
+
+    function matchesFilter(ev, filter) {
+      if (!filter || filter === "All") return true;
+      const hay = [ev.event_type, ev.platform, ev.access].filter(Boolean).join(" ").toLowerCase();
+      switch (filter) {
+        case "In-Person": return hay.includes("in-person") || hay.includes("in person") || hay.includes("on-site") || hay.includes("on site");
+        case "Webinars": return hay.includes("webinar") || hay.includes("zoom") || hay.includes("teams") || hay.includes("youtube") || hay.includes("virtual") || hay.includes("stream");
+        case "Workshops": return hay.includes("workshop");
+        case "Member Events": return hay.includes("member");
+        case "Invite Only": return hay.includes("invite");
+        default: return true;
+      }
+    }
+
+    function getPlatformLabel(ev) {
+      const p = (ev.platform || "").trim();
+      return p;
+    }
+
+    function getCtaLabel(ev) {
+      if (ev.cta_label && ev.cta_label.trim()) return ev.cta_label.trim();
+      const platform = (ev.platform || "").toLowerCase();
+      if (platform.includes("bizzabo")) return "Register on Bizzabo";
+      if (platform.includes("zoom") || platform.includes("teams")) return "Join Webinar";
+      if (platform.includes("youtube")) return "Watch Stream";
+      if ((ev.event_type || "").toLowerCase().includes("webinar")) return "Join Webinar";
+      return "Register";
+    }
+
+    function renderEventCard(ev) {
+      const card = document.createElement("article");
+      card.className = "event-card";
+
+      const start = parseLocalDate(ev.start_date);
+      const dateBlock = document.createElement("div");
+      dateBlock.className = "event-date-block";
+      if (start) {
+        const mo = document.createElement("span");
+        mo.className = "event-date-month";
+        mo.textContent = MONTHS_SHORT[start.getMonth()].toUpperCase();
+        const dy = document.createElement("span");
+        dy.className = "event-date-day";
+        dy.textContent = String(start.getDate());
+        dateBlock.append(mo, dy);
+      } else {
+        const tbd = document.createElement("span");
+        tbd.className = "event-date-month";
+        tbd.textContent = "TBD";
+        dateBlock.append(tbd);
+      }
+
+      const content = document.createElement("div");
+      content.className = "event-card-content";
+
+      const pills = document.createElement("div");
+      pills.className = "event-pill-row";
+      if (ev.event_type) {
+        const t = document.createElement("span");
+        t.className = "event-type-pill";
+        t.textContent = ev.event_type;
+        pills.append(t);
+      }
+      const platformLabel = getPlatformLabel(ev);
+      if (platformLabel) {
+        const p = document.createElement("span");
+        p.className = "event-platform-pill";
+        p.textContent = platformLabel;
+        pills.append(p);
+      }
+      if (ev.access) {
+        const ac = document.createElement("span");
+        ac.className = "event-access-pill";
+        ac.textContent = ev.access;
+        pills.append(ac);
+      }
+      if (pills.childElementCount) content.append(pills);
+
+      const title = document.createElement("h4");
+      title.className = "event-card-title";
+      title.textContent = ev.title || "Untitled Event";
+      content.append(title);
+
+      const meta = document.createElement("div");
+      meta.className = "event-meta";
+      const dateStr = formatEventDate(ev.start_date, ev.end_date);
+      const whenLine = document.createElement("span");
+      whenLine.textContent = ev.time ? `${dateStr} · ${ev.time}` : dateStr;
+      meta.append(whenLine);
+      if (ev.location) {
+        const loc = document.createElement("span");
+        loc.textContent = ev.location;
+        meta.append(loc);
+      }
+      content.append(meta);
+
+      if (ev.description) {
+        const desc = document.createElement("p");
+        desc.className = "event-desc";
+        desc.textContent = ev.description;
+        content.append(desc);
+      }
+
+      const ctaLabel = getCtaLabel(ev);
+      const url = ev.register_url ? String(ev.register_url).trim() : "";
+      if (url) {
+        const cta = document.createElement("a");
+        cta.className = "event-cta";
+        cta.href = url;
+        cta.textContent = ctaLabel;
+        if (/^https?:/i.test(url)) {
+          cta.target = "_blank";
+          cta.rel = "noopener noreferrer";
+        }
+        content.append(cta);
+      } else {
+        const cta = document.createElement("span");
+        cta.className = "event-cta is-disabled";
+        cta.setAttribute("aria-disabled", "true");
+        cta.textContent = "Details Coming Soon";
+        content.append(cta);
+      }
+
+      card.append(dateBlock, content);
+      return card;
+    }
+
+    function renderEmptyState() {
+      const wrap = document.createElement("div");
+      wrap.className = "events-empty-state";
+      const title = document.createElement("p");
+      title.className = "events-empty-title";
+      title.textContent = "No events scheduled for this date.";
+      const sub = document.createElement("p");
+      sub.textContent = "Try another date, change the event type filter, or return to all upcoming events.";
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "events-clear-filter";
+      btn.textContent = "View all upcoming events";
+      btn.addEventListener("click", clearEventFilters);
+      wrap.append(title, sub, btn);
+      return wrap;
+    }
+
+    function updateSelectedDateLabel() {
+      const el = document.getElementById("eventsSelectedDate");
+      if (!el) return;
+      if (selectedDate) {
+        el.hidden = false;
+        el.textContent = `Showing events for ${formatReadableDate(selectedDate)}`;
+      } else {
+        el.hidden = true;
+        el.textContent = "";
+      }
+    }
+
+    function renderEvents() {
+      const list = document.getElementById("eventsScrollList");
+      if (!list) return;
+      let events = sortEvents(allEvents).filter((ev) => matchesFilter(ev, selectedFilter));
+      if (selectedDate) events = events.filter((ev) => eventCoversDate(ev, selectedDate));
+      list.innerHTML = "";
+      if (!events.length) {
+        list.append(renderEmptyState());
+        return;
+      }
+      events.forEach((ev) => list.append(renderEventCard(ev)));
+    }
+
+    function renderCalendar() {
+      const grid = document.getElementById("calendarGrid");
+      const label = document.getElementById("calMonthLabel");
+      if (!grid || !label) return;
+      const year = currentCalendarDate.getFullYear();
+      const month = currentCalendarDate.getMonth();
+      label.textContent = `${MONTHS_LONG[month]} ${year}`;
+      grid.innerHTML = "";
+
+      DAY_NAMES.forEach((dn) => {
+        const c = document.createElement("span");
+        c.className = "calendar-day-name";
+        c.textContent = dn;
+        grid.append(c);
+      });
+
+      const firstWeekday = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      for (let i = 0; i < firstWeekday; i++) {
+        const empty = document.createElement("span");
+        empty.className = "calendar-day-empty";
+        grid.append(empty);
+      }
+
+      const todayKey = toDateKey(new Date());
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateObj = new Date(year, month, day);
+        const key = toDateKey(dateObj);
+        const dayEvents = getEventsForDate(key);
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "calendar-day";
+        btn.setAttribute("aria-label", `View events for ${formatReadableDate(dateObj)}`);
+        if (key === todayKey) btn.classList.add("is-today");
+        if (selectedDate && key === selectedDate) btn.classList.add("is-selected");
+        if (dayEvents.length) btn.classList.add("has-event");
+
+        const num = document.createElement("span");
+        num.className = "calendar-day-number";
+        num.textContent = String(day);
+        btn.append(num);
+
+        if (dayEvents.length) {
+          const dots = document.createElement("span");
+          dots.className = "calendar-event-dots";
+          const dotCount = Math.min(dayEvents.length, 4);
+          for (let d = 0; d < dotCount; d++) {
+            const dot = document.createElement("span");
+            dot.className = "calendar-dot";
+            dots.append(dot);
+          }
+          btn.append(dots);
+        }
+
+        btn.addEventListener("click", () => {
+          selectedDate = (selectedDate === key) ? null : key;
+          renderEvents();
+          renderCalendar();
+          updateSelectedDateLabel();
+        });
+        grid.append(btn);
+      }
+    }
+
+    function setEventFilter(filter) {
+      selectedFilter = filter || "All";
+      document.querySelectorAll(".event-filter").forEach((b) => {
+        b.classList.toggle("is-active", b.dataset.filter === selectedFilter);
+      });
+      renderEvents();
+    }
+
+    function clearEventFilters() {
+      selectedFilter = "All";
+      selectedDate = null;
+      document.querySelectorAll(".event-filter").forEach((b) => {
+        b.classList.toggle("is-active", b.dataset.filter === "All");
+      });
+      renderEvents();
+      renderCalendar();
+      updateSelectedDateLabel();
+    }
+
+    function wireEventsControls() {
+      const filterRow = document.getElementById("eventsFilterRow");
+      if (filterRow) {
+        filterRow.addEventListener("click", (e) => {
+          const btn = e.target.closest(".event-filter");
+          if (!btn) return;
+          setEventFilter(btn.dataset.filter);
+        });
+      }
+      const viewAll = document.getElementById("eventsViewAll");
+      if (viewAll) viewAll.addEventListener("click", clearEventFilters);
+
+      const prev = document.getElementById("calPrev");
+      const next = document.getElementById("calNext");
+      if (prev) prev.addEventListener("click", () => {
+        currentCalendarDate = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() - 1, 1);
+        renderCalendar();
+      });
+      if (next) next.addEventListener("click", () => {
+        currentCalendarDate = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() + 1, 1);
+        renderCalendar();
+      });
+    }
+
+    async function loadEvents() {
+      let events = [];
       try {
         const today = new Date().toISOString().slice(0, 10);
         const { data, error } = await supabase
@@ -104,19 +495,26 @@
           .gte("start_date", today)
           .order("start_date", { ascending: true });
         if (error) throw error;
-        if (data) {
-          grid.innerHTML = "";
-          if (data.length) {
-            data.forEach((ev) => grid.append(card(ev)));
-          } else {
-            grid.innerHTML =
-              '<p class="section-body">No upcoming events right now — check back soon.</p>';
-          }
-        }
+        if (Array.isArray(data) && data.length) events = data;
       } catch (e) {
         console.error("Could not load events from Supabase; showing fallback.", e);
       }
-    })();
+      if (!events.length) events = FALLBACK_EVENTS;
+
+      allEvents = sortEvents(events);
+      if (allEvents.length) {
+        const first = parseLocalDate(allEvents[0].start_date);
+        if (first) currentCalendarDate = new Date(first.getFullYear(), first.getMonth(), 1);
+      }
+      renderEvents();
+      renderCalendar();
+      updateSelectedDateLabel();
+    }
+
+    if (document.getElementById("eventsDashboard")) {
+      wireEventsControls();
+      loadEvents();
+    }
   </script>
 </body>
 </html>
