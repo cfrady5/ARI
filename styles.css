@@ -2141,21 +2141,6 @@ a {
   box-shadow: 0 0 0 3px rgba(59, 174, 72, 0.18);
 }
 
-/* ============ Home closing band (light-trails image) ============ */
-.home-closer {
-  position: relative;
-  background-image:
-    linear-gradient(rgba(3, 6, 5, 0.72), rgba(3, 6, 5, 0.82)),
-    url(assets/initiative-assets/ram.jpg);
-  background-size: cover;
-  background-position: center;
-  padding: clamp(4rem, 10vw, 7rem) 0;
-  border-top: 1px solid var(--border-soft);
-}
-.home-closer-inner { max-width: 680px; margin: 0 auto; text-align: center; }
-.home-closer-inner h2 { max-width: none; margin-bottom: 0.9rem; }
-.home-closer-inner p { color: var(--muted); font-size: 1.08rem; margin: 0 auto 1.6rem; max-width: 52ch; }
-
 /* ============ Events command center (split-view dashboard) ============ */
 .events-hero-actions {
   display: flex;
