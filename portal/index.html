@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../styles.css?v=77" />
+  <link rel="stylesheet" href="../styles.css?v=78" />
 </head>
 <body class="portal-body">
   <div class="wave-wrap" aria-hidden="true"><canvas id="heroWave"></canvas><div class="wave-fade"></div></div>
@@ -78,6 +78,7 @@
           <label class="portal-check"><input type="checkbox" id="p_published" checked /> Published (visible on the public site)</label>
           <div class="portal-actions">
             <button class="btn btn-primary" type="submit" id="postSubmit">Publish</button>
+            <button class="btn btn-secondary" type="button" id="postPreview">Preview</button>
             <button class="btn btn-secondary" type="button" id="postCancel">Clear</button>
             <span class="portal-msg" id="postMsg" role="status"></span>
           </div>
@@ -89,24 +90,27 @@
             <p class="portal-sub">Upload a <code>.csv</code> or <code>.xlsx</code> with a header row, assign each column to a field, then import. <strong>Title</strong> is required; everything else is optional.</p>
             <label class="portal-field">CSV or Excel file<input type="file" id="postCsvFile" accept=".csv,text/csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" /></label>
             <div id="postMapWrap" hidden>
-              <h4 class="portal-map-title">Assign columns to fields</h4>
-              <div class="portal-map-grid" id="postMapGrid"></div>
-              <label class="portal-field">Default category (used when the category cell is blank or unmapped)
-                <select id="postImportCategory">
-                  <option>Press Release</option>
-                  <option>Initiative Update</option>
-                  <option>Report</option>
-                  <option>Op-Ed</option>
-                  <option>In the Media</option>
-                </select>
-              </label>
-              <label class="portal-check"><input type="checkbox" id="postImportPublished" checked /> Import rows as published (unless a Published column says otherwise)</label>
-              <div class="portal-import-preview" id="postImportPreview"></div>
-              <div class="portal-actions">
-                <button class="btn btn-primary" type="button" id="postImportBtn">Import <span id="postImportCount"></span></button>
-                <button class="btn btn-secondary" type="button" id="postImportCancel">Cancel</button>
-                <span class="portal-msg" id="postImportMsg" role="status"></span>
+              <div id="postImportConfig">
+                <h4 class="portal-map-title">Assign columns to fields</h4>
+                <div class="portal-map-grid" id="postMapGrid"></div>
+                <label class="portal-field">Default category (used when the category cell is blank or unmapped)
+                  <select id="postImportCategory">
+                    <option>Press Release</option>
+                    <option>Initiative Update</option>
+                    <option>Report</option>
+                    <option>Op-Ed</option>
+                    <option>In the Media</option>
+                  </select>
+                </label>
+                <label class="portal-check"><input type="checkbox" id="postImportPublished" checked /> Import rows as published (unless a Published column says otherwise)</label>
+                <div class="portal-import-preview" id="postImportPreview"></div>
+                <div class="portal-actions">
+                  <button class="btn btn-primary" type="button" id="postImportBtn">Save &amp; Post <span id="postImportCount"></span></button>
+                  <button class="btn btn-secondary" type="button" id="postImportCancel">Cancel</button>
+                  <span class="portal-msg" id="postImportMsg" role="status"></span>
+                </div>
               </div>
+              <div class="portal-import-done" id="postImportDone" hidden></div>
             </div>
           </div>
         </details>
@@ -162,6 +166,7 @@
           <label class="portal-check"><input type="checkbox" id="e_published" checked /> Published (visible on the public site)</label>
           <div class="portal-actions">
             <button class="btn btn-primary" type="submit" id="eventSubmit">Publish</button>
+            <button class="btn btn-secondary" type="button" id="eventPreviewCal">Preview calendar</button>
             <button class="btn btn-secondary" type="button" id="eventCancel">Clear</button>
             <span class="portal-msg" id="eventMsg" role="status"></span>
           </div>
@@ -173,18 +178,21 @@
             <p class="portal-sub">Upload a <code>.csv</code> or <code>.xlsx</code> (including monday.com exports) with a header row, assign each column to a field, then import. <strong>Title</strong> and <strong>Start date</strong> are required. Dates accept Excel dates and formats like <code>2026-10-14</code>, <code>10/14/2026</code>, or <code>October 14, 2026</code>.</p>
             <label class="portal-field">CSV or Excel file<input type="file" id="eventCsvFile" accept=".csv,text/csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" /></label>
             <div id="eventMapWrap" hidden>
-              <h4 class="portal-map-title">Assign columns to fields</h4>
-              <div class="portal-map-grid" id="eventMapGrid"></div>
-              <label class="portal-field">Default type (used when the type cell is blank or unmapped)
-                <input type="text" id="eventImportType" list="eventTypes" placeholder="e.g. Industry Day" />
-              </label>
-              <label class="portal-check"><input type="checkbox" id="eventImportPublished" checked /> Import rows as published (unless a Published column says otherwise)</label>
-              <div class="portal-import-preview" id="eventImportPreview"></div>
-              <div class="portal-actions">
-                <button class="btn btn-primary" type="button" id="eventImportBtn">Import <span id="eventImportCount"></span></button>
-                <button class="btn btn-secondary" type="button" id="eventImportCancel">Cancel</button>
-                <span class="portal-msg" id="eventImportMsg" role="status"></span>
+              <div id="eventImportConfig">
+                <h4 class="portal-map-title">Assign columns to fields</h4>
+                <div class="portal-map-grid" id="eventMapGrid"></div>
+                <label class="portal-field">Default type (used when the type cell is blank or unmapped)
+                  <input type="text" id="eventImportType" list="eventTypes" placeholder="e.g. Industry Day" />
+                </label>
+                <label class="portal-check"><input type="checkbox" id="eventImportPublished" checked /> Import rows as published (unless a Published column says otherwise)</label>
+                <div class="portal-import-preview" id="eventImportPreview"></div>
+                <div class="portal-actions">
+                  <button class="btn btn-primary" type="button" id="eventImportBtn">Save &amp; Post <span id="eventImportCount"></span></button>
+                  <button class="btn btn-secondary" type="button" id="eventImportCancel">Cancel</button>
+                  <span class="portal-msg" id="eventImportMsg" role="status"></span>
+                </div>
               </div>
+              <div class="portal-import-done" id="eventImportDone" hidden></div>
             </div>
           </div>
         </details>
@@ -211,7 +219,34 @@
     </section>
   </main>
 
-  <script src="../script.js?v=77"></script>
+  <!-- ============ Post preview modal ============ -->
+  <div class="portal-modal" id="postPreviewModal" hidden>
+    <div class="portal-modal-card portal-modal-card--article">
+      <button class="portal-modal-close" id="postPreviewClose" type="button" aria-label="Close preview">&times;</button>
+      <p class="portal-modal-kicker">Post preview</p>
+      <div class="portal-preview-article" id="postPreviewBody"></div>
+    </div>
+  </div>
+
+  <!-- ============ Calendar preview modal ============ -->
+  <div class="portal-modal" id="calPreviewModal" hidden>
+    <div class="portal-modal-card portal-modal-card--cal">
+      <button class="portal-modal-close" id="calPreviewClose" type="button" aria-label="Close preview">&times;</button>
+      <p class="portal-modal-kicker">Calendar preview</p>
+      <p class="portal-sub">Every event in the system (drafts included), exactly how the public calendar will be populated.</p>
+      <div class="events-calendar-panel" style="position:static;box-shadow:none">
+        <div class="calendar-header">
+          <button type="button" class="calendar-arrow" id="calPrevPv" aria-label="Previous month">&#8249;</button>
+          <span class="calendar-month-label" id="calMonthPv">&nbsp;</span>
+          <button type="button" class="calendar-arrow" id="calNextPv" aria-label="Next month">&#8250;</button>
+        </div>
+        <div class="calendar-grid" id="calGridPv"></div>
+      </div>
+      <div class="portal-cal-detail" id="calDetailPv"></div>
+    </div>
+  </div>
+
+  <script src="../script.js?v=78"></script>
   <script type="module">
     const $ = (id) => document.getElementById(id);
     let supabase, formatEventDate;
@@ -408,10 +443,12 @@
 
     /* ---------------- Events ---------------- */
     const eventForm = $("eventForm");
+    let portalEvents = [];
     async function loadEvents() {
       const { data, error } = await supabase.from("events").select("*").order("start_date", { ascending: true });
       const list = $("eventList"); list.innerHTML = "";
       if (error) { list.textContent = error.message; return; }
+      portalEvents = data || [];
       if (!data.length) { list.innerHTML = '<p class="portal-empty">No events yet.</p>'; return; }
       data.forEach((ev) => list.append(itemRow(
         ev.title,
@@ -603,6 +640,8 @@
 
     function buildImportRows(fields, headers, dataRows, mapping, opts) {
       const out = [], skipped = [];
+      const dk = opts.defaultKey;
+      const dkDefault = dk === "category" ? opts.defaultCategory : (dk === "event_type" ? opts.defaultType : "");
       dataRows.forEach((cells, idx) => {
         const obj = {};
         fields.forEach((f) => {
@@ -613,13 +652,17 @@
           else if (f.isDate) obj[f.key] = toISODate(val);
           else obj[f.key] = val || null;
         });
-        if ("category" in obj && !obj.category && opts.defaultCategory) obj.category = opts.defaultCategory;
-        if ("event_type" in obj && !obj.event_type && opts.defaultType) obj.event_type = opts.defaultType;
+        // Resolve the type/category field: per-row override > mapped value > global default.
+        if (dk) {
+          const ov = opts.rowOverrides && opts.rowOverrides[idx];
+          if (ov != null && String(ov).trim() !== "") obj[dk] = String(ov).trim();
+          else if (!obj[dk] && dkDefault) obj[dk] = dkDefault;
+        }
         // Drop empty date/timestamp columns so DB defaults (e.g. now()) apply.
         fields.forEach((f) => { if (f.omitIfEmpty && obj[f.key] == null) delete obj[f.key]; });
         const missing = fields.filter((f) => f.required && !obj[f.key]);
         if (missing.length) { skipped.push({ row: idx + (opts.rowOffset || 2), reason: "missing " + missing.map((f) => f.label).join(", ") }); return; }
-        out.push(obj);
+        out.push({ index: idx, data: obj });
       });
       return { out, skipped };
     }
@@ -663,10 +706,11 @@
     function setupImporter(cfg) {
       const fileInput = $(cfg.fileInput);
       if (!fileInput) return;
-      let headers = [], dataRows = [], mapping = {}, headerOffset = 2;
+      let headers = [], dataRows = [], mapping = {}, headerOffset = 2, rowOverrides = {};
+      const noun = cfg.table === "posts" ? "post" : "event";
 
       function readOpts() {
-        const opts = { defaultPublished: $(cfg.publishedToggle).checked, rowOffset: headerOffset };
+        const opts = { defaultPublished: $(cfg.publishedToggle).checked, rowOffset: headerOffset, defaultKey: cfg.defaultKey, rowOverrides };
         if (cfg.defaultInput) {
           const dv = ($(cfg.defaultInput).value || "").trim();
           if (cfg.defaultKey === "category") opts.defaultCategory = dv;
@@ -678,13 +722,70 @@
         const { out, skipped } = buildImportRows(cfg.fields, headers, dataRows, mapping, readOpts());
         $(cfg.count).textContent = out.length ? `(${out.length})` : "";
         $(cfg.importBtn).disabled = !out.length;
-        let html = `<p class="portal-sub"><strong>${out.length}</strong> row${out.length === 1 ? "" : "s"} ready` + (skipped.length ? ` · <strong>${skipped.length}</strong> skipped` : "") + ".</p>";
-        if (skipped.length) html += '<ul class="portal-skip">' + skipped.slice(0, 6).map((s) => `<li>Row ${s.row}: ${s.reason}</li>`).join("") + (skipped.length > 6 ? `<li>…and ${skipped.length - 6} more</li>` : "") + "</ul>";
-        $(cfg.preview).innerHTML = html;
+        const wrap = $(cfg.preview);
+        wrap.innerHTML = "";
+        const summary = document.createElement("p");
+        summary.className = "portal-sub";
+        summary.innerHTML = `<strong>${out.length}</strong> ${noun}${out.length === 1 ? "" : "s"} ready` + (skipped.length ? ` · <strong>${skipped.length}</strong> skipped` : "") + ".";
+        wrap.append(summary);
+        if (skipped.length) {
+          const ul = document.createElement("ul"); ul.className = "portal-skip";
+          skipped.slice(0, 6).forEach((s) => { const li = document.createElement("li"); li.textContent = `Row ${s.row}: ${s.reason}`; ul.append(li); });
+          if (skipped.length > 6) { const li = document.createElement("li"); li.textContent = `…and ${skipped.length - 6} more`; ul.append(li); }
+          wrap.append(ul);
+        }
+        if (out.length && cfg.defaultKey) {
+          const hint = document.createElement("p");
+          hint.className = "portal-sub portal-import-rows-hint";
+          hint.textContent = cfg.table === "events" ? "Set the type for each event before posting:" : "Set the category for each post before posting:";
+          wrap.append(hint);
+          const rowsWrap = document.createElement("div"); rowsWrap.className = "portal-import-rows";
+          out.forEach((o) => {
+            const row = document.createElement("div"); row.className = "portal-import-row";
+            const info = document.createElement("div"); info.className = "portal-import-row-info";
+            const t = document.createElement("span"); t.className = "portal-import-row-title"; t.textContent = o.data.title || "(untitled)";
+            info.append(t);
+            if (cfg.table === "events") { const dt = formatEventDate(o.data.start_date, o.data.end_date); if (dt) { const d = document.createElement("span"); d.className = "portal-import-row-date"; d.textContent = dt; info.append(d); } }
+            const sel = document.createElement("select"); sel.className = "portal-filter portal-import-row-type";
+            const cur = o.data[cfg.defaultKey] || "";
+            const optList = cfg.typeOptions.slice();
+            if (cur && !optList.includes(cur)) optList.unshift(cur);
+            optList.forEach((v) => { const op = document.createElement("option"); op.value = v; op.textContent = v; sel.append(op); });
+            sel.value = cur;
+            sel.addEventListener("change", () => { rowOverrides[o.index] = sel.value; });
+            row.append(info, sel);
+            rowsWrap.append(row);
+          });
+          wrap.append(rowsWrap);
+        }
+      }
+      function renderRundown(rowsData) {
+        const done = $(cfg.done); done.innerHTML = "";
+        const head = document.createElement("div"); head.className = "portal-import-done-head";
+        head.textContent = `✓ Added ${rowsData.length} ${noun}${rowsData.length === 1 ? "" : "s"}`;
+        done.append(head);
+        const ul = document.createElement("ul"); ul.className = "portal-done-list";
+        rowsData.forEach((d) => {
+          const li = document.createElement("li");
+          const t = document.createElement("span"); t.className = "portal-done-title"; t.textContent = d.title || "(untitled)";
+          li.append(t);
+          const meta = cfg.table === "events" ? (formatEventDate(d.start_date, d.end_date) || "") : (d.category || "");
+          if (meta) { const m = document.createElement("span"); m.className = "portal-done-date"; m.textContent = meta; li.append(m); }
+          ul.append(li);
+        });
+        done.append(ul);
+        const again = document.createElement("button"); again.type = "button"; again.className = "btn btn-secondary"; again.textContent = "Import another file";
+        again.addEventListener("click", resetImporter);
+        done.append(again);
+        done.hidden = false;
       }
       function resetImporter() {
-        fileInput.value = ""; headers = []; dataRows = []; mapping = {};
-        $(cfg.mapWrap).hidden = true; $(cfg.preview).innerHTML = ""; $(cfg.count).textContent = "";
+        fileInput.value = ""; headers = []; dataRows = []; mapping = {}; rowOverrides = {};
+        $(cfg.mapWrap).hidden = true;
+        $(cfg.config).hidden = false;
+        $(cfg.done).hidden = true; $(cfg.done).innerHTML = "";
+        $(cfg.preview).innerHTML = ""; $(cfg.count).textContent = "";
+        $(cfg.importBtn).disabled = false; $(cfg.msg).textContent = "";
       }
 
       fileInput.addEventListener("change", async () => {
@@ -708,8 +809,10 @@
         headers = (rows[hr] || []).map((h) => (h == null ? "" : String(h)).trim());
         dataRows = rows.slice(hr + 1);
         headerOffset = hr + 2;
+        rowOverrides = {};
         if (!dataRows.length) { $(cfg.msg).textContent = "Found a header row but no data below it."; $(cfg.mapWrap).hidden = true; return; }
         $(cfg.msg).textContent = "";
+        $(cfg.config).hidden = false; $(cfg.done).hidden = true; $(cfg.done).innerHTML = "";
         mapping = {};
         cfg.fields.forEach((f) => { mapping[f.key] = guessColumn(f, headers); });
         renderMapGrid($(cfg.mapGrid), cfg.fields, headers, mapping, updatePreview);
@@ -724,15 +827,16 @@
       $(cfg.importBtn).addEventListener("click", async () => {
         const { out } = buildImportRows(cfg.fields, headers, dataRows, mapping, readOpts());
         if (!out.length) return;
+        const payload = out.map((o) => o.data);
         $(cfg.importBtn).disabled = true;
-        $(cfg.msg).textContent = "Importing…";
+        $(cfg.msg).textContent = "Saving…";
         try {
-          const n = await bulkInsert(cfg.table, out);
-          const noun = cfg.table === "posts" ? "post" : "event";
-          $(cfg.msg).textContent = `Imported ${n} ${noun}${n === 1 ? "" : "s"}.`;
-          resetImporter();
+          await bulkInsert(cfg.table, payload);
+          $(cfg.msg).textContent = "";
+          $(cfg.config).hidden = true;
+          renderRundown(payload);
+          fileInput.value = ""; headers = []; dataRows = []; mapping = {}; rowOverrides = {};
           cfg.onDone();
-          setTimeout(() => ($(cfg.msg).textContent = ""), 4000);
         } catch (err) {
           $(cfg.msg).textContent = (err && err.message) || "Import failed.";
           $(cfg.importBtn).disabled = false;
@@ -743,17 +847,128 @@
     setupImporter({
       table: "posts", fields: POST_FIELDS, onDone: () => loadPosts(),
       fileInput: "postCsvFile", mapWrap: "postMapWrap", mapGrid: "postMapGrid",
+      config: "postImportConfig", done: "postImportDone",
       importBtn: "postImportBtn", count: "postImportCount", cancelBtn: "postImportCancel",
       msg: "postImportMsg", preview: "postImportPreview", publishedToggle: "postImportPublished",
       defaultInput: "postImportCategory", defaultKey: "category",
+      typeOptions: ["Press Release", "Initiative Update", "Report", "Op-Ed", "In the Media"],
     });
     setupImporter({
       table: "events", fields: EVENT_FIELDS, onDone: () => loadEvents(),
       fileInput: "eventCsvFile", mapWrap: "eventMapWrap", mapGrid: "eventMapGrid",
+      config: "eventImportConfig", done: "eventImportDone",
       importBtn: "eventImportBtn", count: "eventImportCount", cancelBtn: "eventImportCancel",
       msg: "eventImportMsg", preview: "eventImportPreview", publishedToggle: "eventImportPublished",
       defaultInput: "eventImportType", defaultKey: "event_type",
+      typeOptions: ["Flagship Convening", "Industry Day", "Forum", "Webinar", "Workshop", "Conference", "Member Event", "Roundtable", "Summit", "Networking", "Pop-Up", "Other"],
     });
+
+    /* ---------------- Previews (post + calendar) ---------------- */
+    const MONTHS_LONG_PV = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    function closeModals() { document.querySelectorAll(".portal-modal").forEach((m) => (m.hidden = true)); }
+    document.querySelectorAll(".portal-modal").forEach((m) => {
+      m.addEventListener("click", (e) => { if (e.target === m) m.hidden = true; });
+    });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModals(); });
+    if ($("postPreviewClose")) $("postPreviewClose").addEventListener("click", closeModals);
+    if ($("calPreviewClose")) $("calPreviewClose").addEventListener("click", closeModals);
+
+    // ---- Post preview (mirrors the public article layout) ----
+    function coverSrcPv(v) {
+      if (!v) return null;
+      v = String(v).trim();
+      if (/^https?:\/\//i.test(v)) return v;
+      return "../" + v.replace(/^(\.\.\/|\.\/|\/)+/, "");
+    }
+    function openPostPreview() {
+      const body = $("postPreviewBody"); if (!body) return;
+      body.innerHTML = "";
+      const cover = $("p_cover").value.trim();
+      if (cover) {
+        const c = document.createElement("div"); c.className = "article-cover";
+        c.style.backgroundImage = "url('" + coverSrcPv(cover).replace(/'/g, "%27") + "')";
+        body.append(c);
+      }
+      const meta = document.createElement("div"); meta.className = "article-meta";
+      const tag = document.createElement("span"); tag.className = "tag"; tag.textContent = $("p_category").value; meta.append(tag);
+      const date = document.createElement("span"); date.textContent = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); meta.append(date);
+      body.append(meta);
+      const h = document.createElement("h1"); h.className = "article-title"; h.textContent = $("p_title").value.trim() || "Untitled post"; body.append(h);
+      const art = document.createElement("div"); art.className = "article-body";
+      const summary = $("p_summary").value.trim();
+      if (summary) { const lead = document.createElement("p"); lead.className = "portal-preview-lead"; lead.textContent = summary; art.append(lead); }
+      const bodyText = $("p_body").value.trim();
+      if (bodyText) bodyText.split(/\n\s*\n/).forEach((par) => { const p = document.createElement("p"); p.textContent = par; art.append(p); });
+      else if (!summary) { const p = document.createElement("p"); p.className = "portal-sub"; p.textContent = "Add a summary or full story to see the body here."; art.append(p); }
+      body.append(art);
+      $("postPreviewModal").hidden = false;
+    }
+    if ($("postPreview")) $("postPreview").addEventListener("click", openPostPreview);
+
+    // ---- Calendar preview (all events incl. drafts + the in-form event) ----
+    let pvCalDate = new Date();
+    function pvParse(v) { if (!v) return null; const m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
+    function pvKey(d) { return d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}` : ""; }
+    function pvEventList() {
+      const list = (portalEvents || []).map((ev) => ({ title: ev.title, start: ev.start_date, end: ev.end_date, draft: !ev.published }));
+      const s = $("e_start").value;
+      if (s) list.push({ title: $("e_title").value.trim() || "(new event in form)", start: s, end: $("e_end").value || null, draft: !$("e_published").checked, tentative: true });
+      return list;
+    }
+    function pvForDay(key) {
+      const k = pvParse(key); if (!k) return [];
+      return pvEventList().filter((e) => { const a = pvParse(e.start); if (!a) return false; const b = pvParse(e.end) || a; return k >= a && k <= b; });
+    }
+    function renderPvDetail(key) {
+      const wrap = $("calDetailPv"); wrap.innerHTML = "";
+      const d = pvParse(key);
+      const head = document.createElement("p"); head.className = "portal-cal-detail-head";
+      head.textContent = d ? `${MONTHS_LONG_PV[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}` : "";
+      wrap.append(head);
+      const evs = pvForDay(key);
+      if (!evs.length) { const p = document.createElement("p"); p.className = "portal-sub"; p.textContent = "No events on this day."; wrap.append(p); return; }
+      evs.forEach((e) => {
+        const row = document.createElement("div"); row.className = "portal-cal-event";
+        const t = document.createElement("span"); t.textContent = e.title; row.append(t);
+        if (e.tentative) { const b = document.createElement("span"); b.className = "portal-cal-badge tentative"; b.textContent = "in form"; row.append(b); }
+        else if (e.draft) { const b = document.createElement("span"); b.className = "portal-cal-badge"; b.textContent = "draft"; row.append(b); }
+        wrap.append(row);
+      });
+    }
+    function renderPvCalendar() {
+      const grid = $("calGridPv"), label = $("calMonthPv"); if (!grid || !label) return;
+      const y = pvCalDate.getFullYear(), mo = pvCalDate.getMonth();
+      label.textContent = `${MONTHS_LONG_PV[mo]} ${y}`;
+      grid.innerHTML = "";
+      ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].forEach((n) => { const s = document.createElement("span"); s.className = "calendar-day-name"; s.textContent = n; grid.append(s); });
+      const first = new Date(y, mo, 1).getDay(), days = new Date(y, mo + 1, 0).getDate();
+      for (let i = 0; i < first; i++) { const e = document.createElement("span"); e.className = "calendar-day-empty"; grid.append(e); }
+      const todayKey = pvKey(new Date());
+      for (let dn = 1; dn <= days; dn++) {
+        const dateObj = new Date(y, mo, dn), key = pvKey(dateObj), evs = pvForDay(key);
+        const btn = document.createElement("button"); btn.type = "button"; btn.className = "calendar-day";
+        if (key === todayKey) btn.classList.add("is-today");
+        if (evs.length) btn.classList.add("has-event");
+        const num = document.createElement("span"); num.className = "calendar-day-number"; num.textContent = String(dn); btn.append(num);
+        if (evs.length) { const dots = document.createElement("span"); dots.className = "calendar-event-dots"; for (let i = 0; i < Math.min(evs.length, 4); i++) { const dot = document.createElement("span"); dot.className = "calendar-dot"; dots.append(dot); } btn.append(dots); }
+        btn.addEventListener("click", () => renderPvDetail(key));
+        grid.append(btn);
+      }
+    }
+    function openCalPreview() {
+      const s = $("e_start").value;
+      let base = null;
+      if (s) base = pvParse(s);
+      else if (portalEvents && portalEvents.length) base = pvParse(portalEvents[0].start_date);
+      pvCalDate = base ? new Date(base.getFullYear(), base.getMonth(), 1) : new Date();
+      renderPvCalendar();
+      $("calDetailPv").innerHTML = "";
+      $("calPreviewModal").hidden = false;
+    }
+    if ($("eventPreviewCal")) $("eventPreviewCal").addEventListener("click", openCalPreview);
+    if ($("calPrevPv")) $("calPrevPv").addEventListener("click", () => { pvCalDate = new Date(pvCalDate.getFullYear(), pvCalDate.getMonth() - 1, 1); renderPvCalendar(); });
+    if ($("calNextPv")) $("calNextPv").addEventListener("click", () => { pvCalDate = new Date(pvCalDate.getFullYear(), pvCalDate.getMonth() + 1, 1); renderPvCalendar(); });
 
     /* ---------------- Team ---------------- */
     const teamForm = $("teamForm");

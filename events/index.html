@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../styles.css?v=77" />
+  <link rel="stylesheet" href="../styles.css?v=78" />
 </head>
 <body>
   <header class="site-header" id="siteHeader">
@@ -84,6 +84,7 @@
               <span class="calendar-month-label" id="calMonthLabel">&nbsp;</span>
               <button type="button" class="calendar-arrow" id="calNext" aria-label="Next month">&#8250;</button>
             </div>
+            <div class="calendar-toolbar"><button type="button" class="calendar-today" id="calToday">Today</button></div>
             <div class="calendar-grid" id="calendarGrid"></div>
             <p class="calendar-helper">Green dots mark days with scheduled events. Select a day to filter the list.</p>
           </div>
@@ -131,7 +132,7 @@
     </div>
     <div class="footer-bottom"><div class="footer-bottom-inner"><p>&copy; <span id="year"></span> Applied Research Institute. All rights reserved.</p><div class="footer-legal"><a href="../privacy/">Privacy</a><a href="../terms/">Terms</a><a href="../accessibility/">Accessibility</a></div></div></div>
   </footer>
-  <script src="../script.js?v=77"></script>
+  <script src="../script.js?v=78"></script>
   <script type="module">
     import { supabase, formatEventDate } from "../assets/supabase.js";
 
@@ -480,6 +481,12 @@
       });
       if (next) next.addEventListener("click", () => {
         currentCalendarDate = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() + 1, 1);
+        renderCalendar();
+      });
+      const today = document.getElementById("calToday");
+      if (today) today.addEventListener("click", () => {
+        const now = new Date();
+        currentCalendarDate = new Date(now.getFullYear(), now.getMonth(), 1);
         renderCalendar();
       });
     }

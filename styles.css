@@ -2543,3 +2543,155 @@ a {
 }
 .portal-cover-status.ok { color: var(--green); }
 .portal-cover-status.err { color: #ff8585; }
+
+/* ============ Portal modals (post + calendar preview) ============ */
+.portal-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(1rem, 4vw, 3rem) 1rem;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(4px);
+  overflow-y: auto;
+}
+.portal-modal[hidden] { display: none; }
+.portal-modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  background: linear-gradient(180deg, rgba(31, 54, 85, 0.22), rgba(5, 8, 7, 0.96));
+  border: 1px solid var(--border-green);
+  border-radius: 18px;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6);
+}
+.portal-modal-card--cal { max-width: 560px; }
+.portal-modal-close {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.9rem;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-soft);
+  border-radius: 50%;
+  color: var(--white);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.portal-modal-close:hover { background: rgba(255, 255, 255, 0.12); }
+.portal-modal-kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 0.6rem;
+}
+.portal-preview-article .article-cover {
+  height: 220px;
+  border-radius: 14px;
+  background-size: cover;
+  background-position: center;
+  margin-bottom: 1.2rem;
+}
+.portal-preview-article .article-title { font-size: clamp(1.6rem, 3.4vw, 2.2rem); margin: 0.4rem 0 1rem; max-width: none; }
+.portal-preview-article .article-meta { display: flex; gap: 12px; align-items: center; color: var(--muted); font-size: 0.85rem; flex-wrap: wrap; }
+.portal-preview-article .article-body { color: var(--muted); }
+.portal-preview-article .article-body p { margin-bottom: 0.9rem; }
+.portal-preview-lead { color: var(--white) !important; font-size: 1.05rem; font-weight: 600; }
+
+/* ---- Calendar preview detail ---- */
+.portal-cal-detail { margin-top: 1rem; }
+.portal-cal-detail-head { font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
+.portal-cal-event {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  font-size: 0.88rem;
+}
+.portal-cal-badge {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+}
+.portal-cal-badge.tentative { background: rgba(59, 174, 72, 0.18); color: var(--green); }
+
+/* ============ Portal import: per-row types + rundown ============ */
+.portal-import-rows-hint { margin-top: 0.8rem !important; color: var(--white) !important; font-weight: 600; }
+.portal-import-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--green-soft) transparent;
+}
+.portal-import-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0.5rem 0.7rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-soft);
+  border-radius: 9px;
+}
+.portal-import-row-info { display: flex; flex-direction: column; min-width: 0; }
+.portal-import-row-title { font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 46ch; }
+.portal-import-row-date { font-size: 0.78rem; color: var(--subtle); }
+.portal-import-row-type { flex: 0 0 auto; min-width: 160px; }
+.portal-import-done { display: flex; flex-direction: column; gap: 0.6rem; }
+.portal-import-done-head { font-size: 1.05rem; font-weight: 800; color: var(--green); }
+.portal-done-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  background: rgba(59, 174, 72, 0.06);
+  border: 1px solid var(--border-green);
+  border-radius: 10px;
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.portal-done-list li { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 0.86rem; }
+.portal-done-title { color: var(--white); font-weight: 600; }
+.portal-done-date { color: var(--subtle); font-size: 0.8rem; white-space: nowrap; }
+.portal-import-done .btn { align-self: flex-start; }
+
+/* ---- Events calendar: Today button ---- */
+.calendar-toolbar { display: flex; justify-content: center; margin-bottom: 0.7rem; }
+.calendar-today {
+  background: rgba(59, 174, 72, 0.1);
+  border: 1px solid var(--border-green);
+  color: var(--green);
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  padding: 0.35rem 1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.calendar-today:hover { background: var(--green); color: #04210c; }
