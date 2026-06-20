@@ -584,6 +584,17 @@ a {
   max-height: 96px;
   filter: none;
 }
+/* Photo-forward media box: shows the whole image (no crop) at its own aspect ratio */
+.init-media--fit {
+  aspect-ratio: 760 / 507;
+  min-height: 0;
+  padding: 0;
+  background-color: #0b0f0e;
+  background-image: var(--card-bg, none);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
 .init-body {
   display: flex;
   flex-direction: column;
