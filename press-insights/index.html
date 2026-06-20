@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../styles.css?v=67" />
+  <link rel="stylesheet" href="../styles.css?v=68" />
 </head>
 <body>
   <header class="site-header" id="siteHeader">
@@ -74,13 +74,13 @@
     </div>
     <div class="footer-bottom"><div class="footer-bottom-inner"><p>&copy; <span id="year"></span> Applied Research Institute. All rights reserved.</p><div class="footer-legal"><a href="../privacy/">Privacy</a><a href="../terms/">Terms</a><a href="../accessibility/">Accessibility</a></div></div></div>
   </footer>
-  <script src="../script.js?v=67"></script>
+  <script src="../script.js?v=68"></script>
   <script type="module">
     import { supabase } from "../assets/supabase.js";
     const grid = document.getElementById("postsGrid");
-    // category -> css class hook, e.g. "Press Release" -> "post-cover--press-release"
-    function catSlug(c) {
-      return "post-cover--" + (c || "update").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    // category -> slug, e.g. "Press Release" -> "press-release"
+    function typeSlug(c) {
+      return (c || "update").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     }
     // accept a full URL or a site path like "assets/post-covers/x.jpg"
     function coverSrc(v) {
@@ -92,10 +92,13 @@
     function card(p) {
       const a = document.createElement("article");
       a.className = "card hover post-card";
+      const slug = typeSlug(p.category);
       const cover = document.createElement("span");
-      cover.className = "post-cover " + catSlug(p.category);
-      const src = coverSrc(p.cover_image);
-      if (src) cover.style.backgroundImage = "url('" + src.replace(/'/g, "%27") + "')";
+      cover.className = "post-cover post-cover--" + slug;
+      // custom cover image if set, otherwise the type's default image
+      // (a missing default image simply falls back to the type color scheme)
+      const src = coverSrc(p.cover_image) || "../assets/post-covers/" + slug + ".jpg";
+      cover.style.backgroundImage = "url('" + src.replace(/'/g, "%27") + "')";
       const body = document.createElement("span");
       body.className = "post-body";
       const tag = document.createElement("span");
