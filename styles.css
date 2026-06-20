@@ -2533,3 +2533,13 @@ a {
   flex-direction: column;
   gap: 0.2rem;
 }
+
+/* ============ Portal cover upload status ============ */
+.portal-cover-status {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-top: -0.4rem;
+}
+.portal-cover-status.ok { color: var(--green); }
+.portal-cover-status.err { color: #ff8585; }
