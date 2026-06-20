@@ -639,13 +639,13 @@ a {
 
 /* Initiative thematic groups */
 .init-group {
-  max-width: 760px;
   margin: clamp(2.75rem, 6vw, 4.5rem) 0 1.75rem;
 }
 .init-group-title {
   font-size: clamp(1.5rem, 3.2vw, 2.1rem);
   letter-spacing: -0.01em;
   margin: 0 0 0.6rem;
+  max-width: none;
 }
 .init-group-tagline {
   color: var(--muted);
@@ -675,7 +675,7 @@ a {
 /* Featured initiative banner (RAM) */
 .ram-feature {
   display: grid;
-  grid-template-columns: minmax(0, 440px) 1fr;
+  grid-template-columns: minmax(0, 520px) 1fr;
   gap: clamp(1.5rem, 4vw, 3rem);
   align-items: center;
   padding: clamp(1.75rem, 4vw, 2.75rem);
@@ -702,7 +702,7 @@ a {
 }
 .ram-feature-logo img {
   max-width: 100%;
-  max-height: 220px;
+  max-height: 320px;
   object-fit: contain;
   filter: brightness(0) invert(1);
 }
