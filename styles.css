@@ -2024,3 +2024,37 @@ a {
   color: var(--green);
   border-color: var(--green);
 }
+
+/* ============ Press & Insights cards (cover image + per-type scheme) ============ */
+.post-card {
+  padding: 0;
+  overflow: hidden;
+}
+.post-cover {
+  display: block;
+  height: 168px;
+  background-size: cover;
+  background-position: center;
+  background-color: #1b2422; /* neutral fallback */
+  border-bottom: 1px solid var(--card-border);
+}
+.post-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 1.5rem 1.6rem 1.6rem;
+}
+.post-body h3 {
+  margin-top: 0.8rem;
+}
+.post-body p {
+  margin-top: 0.5rem;
+}
+/* Per-type default color schemes — placeholders; replace with final brand colors
+   (these only show when a post has no custom cover image). */
+.post-cover--press-release { background-color: #12351f; }
+.post-cover--initiative-update { background-color: #0f2e2a; }
+.post-cover--insight { background-color: #14233f; }
+.post-cover--report { background-color: #2a2233; }
+.post-cover--op-ed { background-color: #2f2417; }
+.post-cover--in-the-media { background-color: #1e2937; }

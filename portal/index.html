@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../styles.css?v=66" />
+  <link rel="stylesheet" href="../styles.css?v=67" />
 </head>
 <body class="portal-body">
   <div class="wave-wrap" aria-hidden="true"><canvas id="heroWave"></canvas><div class="wave-fade"></div></div>
@@ -71,6 +71,7 @@
             </select>
           </label>
           <label class="portal-field">Summary<textarea id="p_summary" rows="3" required></textarea></label>
+          <label class="portal-field">Cover image (optional)<input type="text" id="p_cover" placeholder="https://…  or  assets/post-covers/name.jpg" /></label>
           <label class="portal-field">Link (optional)<input type="url" id="p_link" placeholder="https://…" /></label>
           <label class="portal-check"><input type="checkbox" id="p_published" checked /> Published (visible on the public site)</label>
           <div class="portal-actions">
@@ -130,7 +131,7 @@
     </section>
   </main>
 
-  <script src="../script.js?v=66"></script>
+  <script src="../script.js?v=67"></script>
   <script type="module">
     const $ = (id) => document.getElementById(id);
     let supabase, formatEventDate;
@@ -245,6 +246,7 @@
     function editPost(p) {
       $("p_id").value = p.id; $("p_title").value = p.title || ""; $("p_category").value = p.category || "Press Release";
       $("p_summary").value = p.summary || ""; $("p_link").value = p.link || ""; $("p_published").checked = !!p.published;
+      $("p_cover").value = p.cover_image || "";
       $("postFormTitle").textContent = "Edit post"; $("postSubmit").textContent = "Save changes";
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -260,6 +262,7 @@
         title: $("p_title").value.trim(),
         category: $("p_category").value,
         summary: $("p_summary").value.trim(),
+        cover_image: $("p_cover").value.trim() || null,
         link: $("p_link").value.trim() || null,
         published: $("p_published").checked,
       };

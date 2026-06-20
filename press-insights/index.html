@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../styles.css?v=66" />
+  <link rel="stylesheet" href="../styles.css?v=67" />
 </head>
 <body>
   <header class="site-header" id="siteHeader">
@@ -74,22 +74,38 @@
     </div>
     <div class="footer-bottom"><div class="footer-bottom-inner"><p>&copy; <span id="year"></span> Applied Research Institute. All rights reserved.</p><div class="footer-legal"><a href="../privacy/">Privacy</a><a href="../terms/">Terms</a><a href="../accessibility/">Accessibility</a></div></div></div>
   </footer>
-  <script src="../script.js?v=66"></script>
+  <script src="../script.js?v=67"></script>
   <script type="module">
     import { supabase } from "../assets/supabase.js";
     const grid = document.getElementById("postsGrid");
+    // category -> css class hook, e.g. "Press Release" -> "post-cover--press-release"
+    function catSlug(c) {
+      return "post-cover--" + (c || "update").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    }
+    // accept a full URL or a site path like "assets/post-covers/x.jpg"
+    function coverSrc(v) {
+      if (!v) return null;
+      v = String(v).trim();
+      if (/^https?:\/\//i.test(v)) return v;
+      return "../" + v.replace(/^(\.\.\/|\.\/|\/)+/, "");
+    }
     function card(p) {
       const a = document.createElement("article");
-      a.className = "card hover";
+      a.className = "card hover post-card";
+      const cover = document.createElement("span");
+      cover.className = "post-cover " + catSlug(p.category);
+      const src = coverSrc(p.cover_image);
+      if (src) cover.style.backgroundImage = "url('" + src.replace(/'/g, "%27") + "')";
+      const body = document.createElement("span");
+      body.className = "post-body";
       const tag = document.createElement("span");
       tag.className = "tag";
       tag.textContent = p.category || "Update";
       const h = document.createElement("h3");
-      h.style.marginTop = "1rem";
       h.textContent = p.title || "";
       const sum = document.createElement("p");
       sum.textContent = p.summary || "";
-      a.append(tag, h, sum);
+      body.append(tag, h, sum);
       if (p.link) {
         const l = document.createElement("a");
         l.className = "link-arrow";
@@ -98,8 +114,9 @@
         l.target = "_blank";
         l.rel = "noopener noreferrer";
         l.textContent = "Read more →";
-        a.append(l);
+        body.append(l);
       }
+      a.append(cover, body);
       return a;
     }
     (async () => {
