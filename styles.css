@@ -650,7 +650,7 @@ a {
 .init-group-tagline {
   color: var(--muted);
   font-size: 1.05rem;
-  max-width: 60ch;
+  max-width: none;
   margin: 0;
 }
 
@@ -675,7 +675,7 @@ a {
 /* Featured initiative banner (RAM) */
 .ram-feature {
   display: grid;
-  grid-template-columns: minmax(0, 520px) 1fr;
+  grid-template-columns: minmax(0, 400px) 1fr;
   gap: clamp(1.5rem, 4vw, 3rem);
   align-items: center;
   padding: clamp(1.75rem, 4vw, 2.75rem);
@@ -701,8 +701,9 @@ a {
   justify-content: center;
 }
 .ram-feature-logo img {
-  max-width: 100%;
-  max-height: 320px;
+  width: 100%;
+  max-width: 400px;
+  height: auto;
   object-fit: contain;
   filter: brightness(0) invert(1);
 }
