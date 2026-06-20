@@ -585,6 +585,13 @@ a {
   flex: 1;
   padding: 1.4rem 1.6rem 1.6rem;
 }
+.init-name {
+  color: var(--white);
+  font-size: 1.18rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.5rem;
+}
 .init-desc {
   color: var(--muted);
   font-size: 0.98rem;
