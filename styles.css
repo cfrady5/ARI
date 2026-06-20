@@ -558,14 +558,42 @@ a {
   justify-content: center;
   min-height: 232px;
   padding: 1.5rem;
-  /* grey placeholder box; --card-bg (set inline) becomes the photo once
-     an image is dropped into assets/initiative-assets/ */
+  overflow: hidden;
+  /* grey placeholder shows until a --card-bg image is set */
   background-color: #232826;
-  background-image: linear-gradient(rgba(3, 6, 5, 0.45), rgba(3, 6, 5, 0.62)),
-    var(--card-bg, none);
+  border-bottom: 1px solid var(--card-border);
+}
+/* Background photo: grayscale at rest, full color on hover (logo unaffected) */
+.init-media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--card-bg, none);
   background-size: cover;
   background-position: center;
-  border-bottom: 1px solid var(--card-border);
+  filter: grayscale(1);
+  transition: filter 0.5s ease;
+  z-index: 0;
+}
+/* Darkening so the white logo stays legible over the photo */
+.init-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(3, 6, 5, 0.45), rgba(3, 6, 5, 0.62));
+  z-index: 1;
+}
+.init-media::after {
+  transition: background 0.5s ease;
+}
+.init-card:hover .init-media::before,
+.init-card:focus-within .init-media::before {
+  filter: grayscale(0);
+}
+/* Lighten the overlay on hover so the color reads more vividly */
+.init-card:hover .init-media::after,
+.init-card:focus-within .init-media::after {
+  background: linear-gradient(rgba(3, 6, 5, 0.28), rgba(3, 6, 5, 0.45));
 }
 .init-logo-img {
   max-height: 148px;
@@ -573,7 +601,7 @@ a {
   object-fit: contain;
   filter: brightness(0) invert(1);
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 /* Detailed badge logos (e.g. the UAS shield) need extra height to stay legible */
 .init-logo-img--badge {
@@ -584,34 +612,9 @@ a {
   max-height: 96px;
   filter: none;
 }
-/* Photo-forward media box: shows the whole image (no crop) with the logo on top */
-.init-media--fit {
-  display: block;
-  position: relative;
-  min-height: 0;
-  padding: 0;
-  background: #0b0f0e;
-}
-.init-photo {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-.init-media--fit::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(rgba(3, 6, 5, 0.25), rgba(3, 6, 5, 0.5));
-  z-index: 1;
-}
-.init-media--fit .init-logo-img {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-  max-height: 56%;
-  max-width: 74%;
+/* Keep the logo perfectly still on hover — only the photo color shifts */
+.init-card.hover:hover {
+  transform: none;
 }
 .init-body {
   display: flex;
