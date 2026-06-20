@@ -451,16 +451,25 @@ a {
   justify-content: center;
   flex: none;
   min-width: clamp(220px, 22vw, 340px);
-  height: 82px;
+  height: 96px;
   padding: 0 3rem;
   border-right: 1px solid rgba(255, 255, 255, 0.18);
 }
 .logo-item img {
-  max-height: 54px;
-  max-width: 240px;
+  max-height: 72px;
+  max-width: 280px;
   object-fit: contain;
   opacity: 0.95;
   filter: brightness(0) invert(1);
+}
+/* Keep these marks at the smaller size for visual balance */
+.logo-item img[src*="scitechconnect"],
+.logo-item img[src*="silicon-crossroads"],
+.logo-item img[src*="tradewinds"],
+.logo-item img[src*="darpa-eris"],
+.logo-item img[src*="platform-one"] {
+  max-height: 54px;
+  max-width: 240px;
 }
 /* RAM wordmark reads small at the shared cap — give it a larger ceiling. */
 .logo-item span {
