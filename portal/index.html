@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../styles.css?v=78" />
+  <link rel="stylesheet" href="../styles.css?v=79" />
 </head>
 <body class="portal-body">
   <div class="wave-wrap" aria-hidden="true"><canvas id="heroWave"></canvas><div class="wave-fade"></div></div>
@@ -129,6 +129,10 @@
             </select>
           </div>
         </div>
+        <div class="portal-bulk">
+          <label class="portal-bulk-all"><input type="checkbox" id="postSelectAll" /> Select all</label>
+          <button type="button" class="portal-mini portal-mini--danger" id="postBulkDelete" disabled>Delete selected (0)</button>
+        </div>
         <div class="portal-list" id="postList"></div>
       </div>
 
@@ -198,6 +202,10 @@
         </details>
 
         <h3 class="portal-list-title">All events</h3>
+        <div class="portal-bulk">
+          <label class="portal-bulk-all"><input type="checkbox" id="eventSelectAll" /> Select all</label>
+          <button type="button" class="portal-mini portal-mini--danger" id="eventBulkDelete" disabled>Delete selected (0)</button>
+        </div>
         <div class="portal-list" id="eventList"></div>
       </div>
 
@@ -246,7 +254,7 @@
     </div>
   </div>
 
-  <script src="../script.js?v=78"></script>
+  <script src="../script.js?v=79"></script>
   <script type="module">
     const $ = (id) => document.getElementById(id);
     let supabase, formatEventDate;
@@ -325,9 +333,20 @@
     });
 
     /* ---------------- Shared list row ---------------- */
-    function itemRow(title, meta, onEdit, onDelete) {
+    function itemRow(title, meta, onEdit, onDelete, sel) {
       const row = document.createElement("div");
       row.className = "portal-item";
+      if (sel && sel.id != null) {
+        const cb = document.createElement("input");
+        cb.type = "checkbox"; cb.className = "portal-item-check";
+        cb.checked = sel.selection.has(sel.id);
+        cb.setAttribute("aria-label", "Select " + title);
+        cb.addEventListener("change", () => {
+          if (cb.checked) sel.selection.add(sel.id); else sel.selection.delete(sel.id);
+          if (sel.onChange) sel.onChange();
+        });
+        row.append(cb);
+      }
       const info = document.createElement("div");
       const t = document.createElement("div"); t.className = "portal-item-title"; t.textContent = title;
       const m = document.createElement("div"); m.className = "portal-item-meta"; m.textContent = meta;
@@ -339,6 +358,38 @@
       return row;
     }
 
+    /* ---------------- Bulk select / delete ---------------- */
+    let postBulk = null, eventBulk = null;
+    const postSelection = new Set(), eventSelection = new Set();
+    let visiblePostIds = [], visibleEventIds = [];
+    function makeBulk(cfg) {
+      const allCb = $(cfg.allCheckbox), delBtn = $(cfg.deleteBtn);
+      function refresh() {
+        const n = cfg.selection.size;
+        delBtn.disabled = n === 0;
+        delBtn.textContent = `Delete selected (${n})`;
+        const vis = cfg.getVisible();
+        allCb.checked = vis.length > 0 && vis.every((id) => cfg.selection.has(id));
+      }
+      allCb.addEventListener("change", () => {
+        const vis = cfg.getVisible();
+        if (allCb.checked) vis.forEach((id) => cfg.selection.add(id));
+        else vis.forEach((id) => cfg.selection.delete(id));
+        cfg.rerender();
+      });
+      delBtn.addEventListener("click", async () => {
+        const ids = [...cfg.selection];
+        if (!ids.length) return;
+        if (!confirm(`Delete ${ids.length} ${cfg.noun}${ids.length === 1 ? "" : "s"}? This cannot be undone.`)) return;
+        delBtn.disabled = true; delBtn.textContent = "Deleting…";
+        const { error } = await supabase.from(cfg.table).delete().in("id", ids);
+        if (error) { alert(error.message); refresh(); return; }
+        cfg.selection.clear();
+        cfg.onDone();
+      });
+      return { refresh };
+    }
+
     /* ---------------- Posts ---------------- */
     const postForm = $("postForm");
     let allPosts = [];
@@ -347,11 +398,12 @@
       const list = $("postList");
       if (error) { list.innerHTML = ""; list.textContent = error.message; return; }
       allPosts = data || [];
+      postSelection.clear();
       renderPosts();
     }
     function renderPosts() {
       const list = $("postList"); list.innerHTML = "";
-      if (!allPosts.length) { list.innerHTML = '<p class="portal-empty">No posts yet.</p>'; return; }
+      if (!allPosts.length) { list.innerHTML = '<p class="portal-empty">No posts yet.</p>'; visiblePostIds = []; if (postBulk) postBulk.refresh(); return; }
       const q = ($("postSearch").value || "").trim().toLowerCase();
       const cat = $("postFilter").value;
       const rows = allPosts.filter((p) =>
@@ -361,13 +413,16 @@
           (p.summary || "").toLowerCase().includes(q) ||
           (p.body || "").toLowerCase().includes(q))
       );
-      if (!rows.length) { list.innerHTML = '<p class="portal-empty">No posts match your search.</p>'; return; }
+      if (!rows.length) { list.innerHTML = '<p class="portal-empty">No posts match your search.</p>'; visiblePostIds = []; if (postBulk) postBulk.refresh(); return; }
+      visiblePostIds = rows.map((p) => p.id);
       rows.forEach((p) => list.append(itemRow(
         p.title,
         p.category + (p.published ? "" : " · draft"),
         () => editPost(p),
-        () => delPost(p.id)
+        () => delPost(p.id),
+        { id: p.id, selection: postSelection, onChange: () => postBulk && postBulk.refresh() }
       )));
+      if (postBulk) postBulk.refresh();
     }
     $("postSearch").addEventListener("input", renderPosts);
     $("postFilter").addEventListener("change", renderPosts);
@@ -446,16 +501,24 @@
     let portalEvents = [];
     async function loadEvents() {
       const { data, error } = await supabase.from("events").select("*").order("start_date", { ascending: true });
-      const list = $("eventList"); list.innerHTML = "";
-      if (error) { list.textContent = error.message; return; }
+      const list = $("eventList");
+      if (error) { list.innerHTML = ""; list.textContent = error.message; return; }
       portalEvents = data || [];
-      if (!data.length) { list.innerHTML = '<p class="portal-empty">No events yet.</p>'; return; }
-      data.forEach((ev) => list.append(itemRow(
+      eventSelection.clear();
+      renderEventList();
+    }
+    function renderEventList() {
+      const list = $("eventList"); list.innerHTML = "";
+      visibleEventIds = portalEvents.map((ev) => ev.id);
+      if (!portalEvents.length) { list.innerHTML = '<p class="portal-empty">No events yet.</p>'; if (eventBulk) eventBulk.refresh(); return; }
+      portalEvents.forEach((ev) => list.append(itemRow(
         ev.title,
         formatEventDate(ev.start_date, ev.end_date) + (ev.location ? " · " + ev.location : "") + (ev.published ? "" : " · draft"),
         () => editEvent(ev),
-        () => delEvent(ev.id)
+        () => delEvent(ev.id),
+        { id: ev.id, selection: eventSelection, onChange: () => eventBulk && eventBulk.refresh() }
       )));
+      if (eventBulk) eventBulk.refresh();
     }
     function resetEventForm() {
       eventForm.reset(); $("e_id").value = ""; $("e_published").checked = true;
@@ -862,6 +925,9 @@
       defaultInput: "eventImportType", defaultKey: "event_type",
       typeOptions: ["Flagship Convening", "Industry Day", "Forum", "Webinar", "Workshop", "Conference", "Member Event", "Roundtable", "Summit", "Networking", "Pop-Up", "Other"],
     });
+
+    postBulk = makeBulk({ allCheckbox: "postSelectAll", deleteBtn: "postBulkDelete", selection: postSelection, table: "posts", noun: "post", getVisible: () => visiblePostIds, rerender: renderPosts, onDone: loadPosts });
+    eventBulk = makeBulk({ allCheckbox: "eventSelectAll", deleteBtn: "eventBulkDelete", selection: eventSelection, table: "events", noun: "event", getVisible: () => visibleEventIds, rerender: renderEventList, onDone: loadEvents });
 
     /* ---------------- Previews (post + calendar) ---------------- */
     const MONTHS_LONG_PV = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
