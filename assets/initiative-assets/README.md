@@ -19,6 +19,9 @@ once you upload a file with the matching name it appears automatically:
 | SciTechCONNECT | `scitechconnect.jpg` |
 | Midwest Defense Innovation Summit | `mdis.jpg` |
 | Indiana Research Consortium | `indiana-research-consortium.jpg` |
+| Midwest UAS Test Site | `midwest-uas.jpg` |
+| Defense Innovation OnRamp Hubs | `onramp.jpg` |
+| DARPA ERIS | `darpa-eris.jpg` |
 | Platform One / Marketplace One | `platform-one.jpg` |
 
 ## Image guidance
