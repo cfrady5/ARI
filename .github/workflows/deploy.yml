@@ -34,7 +34,7 @@ jobs:
           mkdir -p _site
           cp -r index.html styles.css script.js assets \
                 about accessibility contact events initiatives \
-                press-insights privacy terms \
+                press-insights privacy terms portal \
                 .nojekyll _site/
 
       - name: Setup Pages

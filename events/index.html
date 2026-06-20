@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../styles.css?v=63" />
+  <link rel="stylesheet" href="../styles.css?v=64" />
 </head>
 <body>
   <header class="site-header" id="siteHeader">
@@ -44,7 +44,7 @@
       <div class="container">
         <p class="section-label reveal">Upcoming</p>
         <h2 class="reveal">Don't miss what's <span class="accent">next.</span></h2>
-        <div data-stagger class="grid grid-3" style="margin-top:2.5rem">
+        <div id="eventsGrid" data-stagger class="grid grid-3" style="margin-top:2.5rem">
           <article class="card hover reveal"><span class="tag">Flagship Convening</span><h3 style="margin-top:1rem">Midwest Defense Innovation Summit 2026</h3><p>October 14–15, 2026 · Indianapolis, IN</p><p>ARI's flagship convening brings the defense innovation ecosystem together around regional capability and mission needs.</p><a href="../contact/" class="btn btn-primary" style="margin-top:1.25rem">Register</a></article>
           <article class="card hover reveal"><span class="tag">Industry Day</span><h3 style="margin-top:1rem">Rapid Acquisition Marketplace Industry Day</h3><p>September 9, 2026 · Virtual</p><p>A working session on how to engage the Rapid Acquisition Marketplace and move from opportunity to award.</p><a href="../contact/" class="btn btn-primary" style="margin-top:1.25rem">Register</a></article>
           <article class="card hover reveal"><span class="tag">Forum</span><h3 style="margin-top:1rem">Heartland BioWorks Workforce Forum</h3><p>August 20, 2026 · Indianapolis, IN</p><p>Industry, academia, and government partners align on the talent pipelines that scale domestic biomanufacturing.</p><a href="../contact/" class="btn btn-primary" style="margin-top:1.25rem">Register</a></article>
@@ -67,10 +67,66 @@
     <div class="container footer-grid" style="padding-left:0;padding-right:0">
       <div class="footer-brand"><a href="../" class="brand" aria-label="ARI home"><img class="brand-logo" src="../assets/ari-logo.png" alt="ARI" /></a><p>Applied Research Institute catalyzes opportunities that enhance national security, accelerate innovation, and drive economic prosperity.</p><p class="mission">ARI catalyzes opportunities that enhance national security and drive economic prosperity.</p></div>
       <nav class="footer-col" aria-label="Explore"><h4>Explore</h4><a href="../about/">About</a><a href="../initiatives/">Initiatives</a><a href="../press-insights/">Press &amp; Insights</a><a href="../events/">Events</a></nav>
-      <nav class="footer-col" aria-label="Connect"><h4>Connect</h4><a href="../contact/">Contact ARI</a><a href="mailto:info@theari.us">info@theari.us</a><a href="mailto:Trevor.Foughty@theari.us">Media: Trevor.Foughty@theari.us</a><a href="https://www.linkedin.com/company/theari" target="_blank" rel="noopener">LinkedIn</a></nav>
+      <nav class="footer-col" aria-label="Connect"><h4>Connect</h4><a href="../contact/">Contact ARI</a><a class="footer-portal" href="../portal/">Employee Portal</a><a class="footer-social" href="https://www.linkedin.com/company/applied-research-institute/" target="_blank" rel="noopener" aria-label="ARI on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg></a></nav>
     </div>
     <div class="footer-bottom"><div class="footer-bottom-inner"><p>&copy; <span id="year"></span> Applied Research Institute. All rights reserved.</p><div class="footer-legal"><a href="../privacy/">Privacy</a><a href="../terms/">Terms</a><a href="../accessibility/">Accessibility</a></div></div></div>
   </footer>
-  <script src="../script.js?v=63"></script>
+  <script src="../script.js?v=64"></script>
+  <script type="module">
+    import { supabase, formatEventDate } from "../assets/supabase.js";
+    const grid = document.getElementById("eventsGrid");
+    function card(ev) {
+      const a = document.createElement("article");
+      a.className = "card hover";
+      const tag = document.createElement("span");
+      tag.className = "tag";
+      tag.textContent = ev.event_type || "Event";
+      const h = document.createElement("h3");
+      h.style.marginTop = "1rem";
+      h.textContent = ev.title || "";
+      const meta = document.createElement("p");
+      const dateStr = formatEventDate(ev.start_date, ev.end_date);
+      meta.textContent = ev.location ? dateStr + " · " + ev.location : dateStr;
+      const desc = document.createElement("p");
+      desc.textContent = ev.description || "";
+      a.append(tag, h, meta, desc);
+      if (ev.register_url) {
+        const btn = document.createElement("a");
+        btn.className = "btn btn-primary";
+        btn.style.marginTop = "1.25rem";
+        btn.href = ev.register_url;
+        btn.textContent = "Register";
+        if (/^https?:/i.test(ev.register_url)) {
+          btn.target = "_blank";
+          btn.rel = "noopener noreferrer";
+        }
+        a.append(btn);
+      }
+      return a;
+    }
+    (async () => {
+      try {
+        const today = new Date().toISOString().slice(0, 10);
+        const { data, error } = await supabase
+          .from("events")
+          .select("*")
+          .eq("published", true)
+          .gte("start_date", today)
+          .order("start_date", { ascending: true });
+        if (error) throw error;
+        if (data) {
+          grid.innerHTML = "";
+          if (data.length) {
+            data.forEach((ev) => grid.append(card(ev)));
+          } else {
+            grid.innerHTML =
+              '<p class="section-body">No upcoming events right now — check back soon.</p>';
+          }
+        }
+      } catch (e) {
+        console.error("Could not load events from Supabase; showing fallback.", e);
+      }
+    })();
+  </script>
 </body>
 </html>

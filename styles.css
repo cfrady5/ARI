@@ -1733,3 +1733,285 @@ a {
     padding-top: 1.5rem;
   }
 }
+
+/* ============ Employee Portal ============ */
+.portal-body {
+  background: radial-gradient(140% 120% at 50% 0%, rgba(31, 54, 85, 0.28), #000 60%);
+  min-height: 100vh;
+}
+.portal-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px clamp(20px, 5vw, 48px);
+  border-bottom: 1px solid var(--border-soft);
+}
+.portal-kicker {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--green);
+}
+.portal-userbar {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.portal-userbar[hidden] {
+  display: none;
+}
+.portal-user {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.portal-main {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 3.5rem) clamp(20px, 5vw, 48px) 5rem;
+}
+
+/* Auth card */
+.portal-auth {
+  max-width: 420px;
+  margin: 6vh auto 0;
+  background: var(--surface);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: clamp(1.75rem, 4vw, 2.5rem);
+}
+.portal-auth h1 {
+  font-size: 1.6rem;
+  margin-bottom: 0.4rem;
+}
+.portal-sub {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin-bottom: 1.4rem;
+}
+
+/* Fields */
+.portal-field {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+.portal-field input,
+.portal-field select,
+.portal-field textarea {
+  display: block;
+  width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.7rem 0.85rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  color: var(--white);
+  font-family: var(--font);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+.portal-field textarea {
+  resize: vertical;
+}
+.portal-field input:focus,
+.portal-field select:focus,
+.portal-field textarea:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(59, 174, 72, 0.18);
+}
+.portal-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1rem;
+}
+.portal-check {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+.portal-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--green);
+}
+.portal-wide {
+  width: 100%;
+  justify-content: center;
+}
+.portal-msg {
+  font-size: 0.88rem;
+  color: var(--green);
+  min-height: 1.1em;
+  margin-top: 0.6rem;
+}
+.portal-link {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1.1rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.portal-link:hover { color: var(--white); }
+
+/* Tabs */
+.portal-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+.portal-tab {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.7rem 0.9rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.portal-tab:hover { color: var(--white); }
+.portal-tab.is-active {
+  color: var(--white);
+  border-bottom-color: var(--green);
+}
+
+/* Forms + lists */
+.portal-form {
+  background: var(--surface);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  padding: clamp(1.4rem, 3vw, 2rem);
+  margin-bottom: 2.5rem;
+}
+.portal-form-title {
+  font-size: 1.2rem;
+  margin-bottom: 1.1rem;
+}
+.portal-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.portal-actions .portal-msg { margin-top: 0; }
+.portal-list-title {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--subtle);
+  margin-bottom: 0.9rem;
+}
+.portal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.portal-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0.9rem 1.1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+}
+.portal-item-title {
+  font-weight: 600;
+  color: var(--white);
+}
+.portal-item-meta {
+  font-size: 0.82rem;
+  color: var(--subtle);
+  margin-top: 2px;
+}
+.portal-item-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+.portal-mini {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-soft);
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.portal-mini:hover { color: var(--white); border-color: var(--green); }
+.portal-mini--danger:hover {
+  color: #ff8b8b;
+  border-color: rgba(255, 90, 90, 0.5);
+}
+.portal-empty {
+  color: var(--subtle);
+  font-size: 0.92rem;
+}
+@media (max-width: 560px) {
+  .portal-row { grid-template-columns: 1fr; }
+}
+
+/* Footer: employee portal button + LinkedIn icon */
+.footer-col a.footer-portal {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  margin-top: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid rgba(59, 174, 72, 0.5);
+  border-radius: 999px;
+  color: var(--white);
+  font-weight: 600;
+  font-size: 0.88rem;
+  vertical-align: middle;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+.footer-col a.footer-portal:hover {
+  color: var(--white);
+  border-color: var(--green);
+  background: rgba(59, 174, 72, 0.1);
+}
+.footer-col a.footer-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin-top: 0.5rem;
+  margin-left: 10px;
+  padding: 0;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  color: var(--muted);
+  vertical-align: middle;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+.footer-col a.footer-social svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+.footer-col a.footer-social:hover {
+  color: var(--green);
+  border-color: var(--green);
+}

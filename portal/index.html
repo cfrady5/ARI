@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Employee Portal | Applied Research Institute (ARI)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles.css?v=64" />
+</head>
+<body class="portal-body">
+  <header class="portal-header">
+    <a class="brand" href="../" aria-label="ARI home"><img class="brand-logo" src="../assets/ari-logo.png" alt="ARI" /></a>
+    <span class="portal-kicker">Employee Portal</span>
+    <div class="portal-userbar" id="userBar" hidden>
+      <span class="portal-user" id="userEmail"></span>
+      <button class="btn btn-secondary" id="logoutBtn" type="button">Log out</button>
+    </div>
+  </header>
+
+  <main class="portal-main">
+    <!-- ============ Sign in / sign up ============ -->
+    <section class="portal-auth" id="loginView" hidden>
+      <h1 id="authHeading">Sign in</h1>
+      <p class="portal-sub">Manage press releases, insights, and events for theari.us.</p>
+      <form id="authForm" autocomplete="on">
+        <label class="portal-field">Email
+          <input type="email" id="email" required autocomplete="username" />
+        </label>
+        <label class="portal-field">Password
+          <input type="password" id="password" required minlength="6" autocomplete="current-password" />
+        </label>
+        <button class="btn btn-primary portal-wide" type="submit" id="authSubmit">Sign in</button>
+      </form>
+      <p class="portal-msg" id="authMsg" role="status"></p>
+      <button class="portal-link" id="toggleMode" type="button">Need an account? Create one</button>
+    </section>
+
+    <!-- ============ Signed in but not allow-listed ============ -->
+    <section class="portal-auth" id="denyView" hidden>
+      <h1>Account not authorized</h1>
+      <p class="portal-sub">You're signed in as <strong id="denyEmail"></strong>, but this email isn't on the ARI employee list yet. Ask an admin to add you from the <em>Team</em> tab.</p>
+      <button class="btn btn-secondary" id="denyLogout" type="button">Log out</button>
+    </section>
+
+    <!-- ============ Dashboard ============ -->
+    <section id="dashView" hidden>
+      <nav class="portal-tabs" aria-label="Portal sections">
+        <button class="portal-tab is-active" type="button" data-tab="posts">Press &amp; Insights</button>
+        <button class="portal-tab" type="button" data-tab="events">Events</button>
+        <button class="portal-tab" type="button" data-tab="team">Team</button>
+      </nav>
+
+      <!-- Posts -->
+      <div class="portal-panel" id="panel-posts">
+        <form class="portal-form" id="postForm">
+          <h2 class="portal-form-title" id="postFormTitle">New press release / insight</h2>
+          <input type="hidden" id="p_id" />
+          <label class="portal-field">Title<input type="text" id="p_title" required /></label>
+          <label class="portal-field">Category
+            <select id="p_category">
+              <option>Press Release</option>
+              <option>Initiative Update</option>
+              <option>Insight</option>
+              <option>Report</option>
+              <option>Op-Ed</option>
+              <option>In the Media</option>
+            </select>
+          </label>
+          <label class="portal-field">Summary<textarea id="p_summary" rows="3" required></textarea></label>
+          <label class="portal-field">Link (optional)<input type="url" id="p_link" placeholder="https://…" /></label>
+          <label class="portal-check"><input type="checkbox" id="p_published" checked /> Published (visible on the public site)</label>
+          <div class="portal-actions">
+            <button class="btn btn-primary" type="submit" id="postSubmit">Publish</button>
+            <button class="btn btn-secondary" type="button" id="postCancel">Clear</button>
+            <span class="portal-msg" id="postMsg" role="status"></span>
+          </div>
+        </form>
+        <h3 class="portal-list-title">All posts</h3>
+        <div class="portal-list" id="postList"></div>
+      </div>
+
+      <!-- Events -->
+      <div class="portal-panel" id="panel-events" hidden>
+        <form class="portal-form" id="eventForm">
+          <h2 class="portal-form-title" id="eventFormTitle">New event</h2>
+          <input type="hidden" id="e_id" />
+          <label class="portal-field">Title<input type="text" id="e_title" required /></label>
+          <label class="portal-field">Type<input type="text" id="e_type" list="eventTypes" placeholder="e.g. Industry Day" /></label>
+          <datalist id="eventTypes">
+            <option>Flagship Convening</option><option>Industry Day</option><option>Forum</option>
+            <option>Webinar</option><option>Workshop</option><option>Conference</option>
+          </datalist>
+          <div class="portal-row">
+            <label class="portal-field">Start date<input type="date" id="e_start" required /></label>
+            <label class="portal-field">End date (optional)<input type="date" id="e_end" /></label>
+          </div>
+          <label class="portal-field">Location<input type="text" id="e_location" placeholder="City, ST or Virtual" /></label>
+          <label class="portal-field">Description<textarea id="e_desc" rows="3"></textarea></label>
+          <label class="portal-field">Registration link (optional)<input type="url" id="e_url" placeholder="https://…" /></label>
+          <label class="portal-check"><input type="checkbox" id="e_published" checked /> Published (visible on the public site)</label>
+          <div class="portal-actions">
+            <button class="btn btn-primary" type="submit" id="eventSubmit">Publish</button>
+            <button class="btn btn-secondary" type="button" id="eventCancel">Clear</button>
+            <span class="portal-msg" id="eventMsg" role="status"></span>
+          </div>
+        </form>
+        <h3 class="portal-list-title">All events</h3>
+        <div class="portal-list" id="eventList"></div>
+      </div>
+
+      <!-- Team -->
+      <div class="portal-panel" id="panel-team" hidden>
+        <form class="portal-form" id="teamForm">
+          <h2 class="portal-form-title">Add an employee</h2>
+          <p class="portal-sub">Add the email of a teammate so they can sign in and post. They create their own password on the sign-in screen.</p>
+          <label class="portal-field">Email<input type="email" id="t_email" required /></label>
+          <label class="portal-field">Name (optional)<input type="text" id="t_name" /></label>
+          <div class="portal-actions">
+            <button class="btn btn-primary" type="submit" id="teamSubmit">Add employee</button>
+            <span class="portal-msg" id="teamMsg" role="status"></span>
+          </div>
+        </form>
+        <h3 class="portal-list-title">Employees</h3>
+        <div class="portal-list" id="teamList"></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    const $ = (id) => document.getElementById(id);
+    let supabase, formatEventDate;
+    const views = { login: $("loginView"), deny: $("denyView"), dash: $("dashView") };
+    function show(view) {
+      Object.values(views).forEach((v) => (v.hidden = true));
+      views[view].hidden = false;
+      $("userBar").hidden = view !== "dash";
+    }
+
+    /* ---------------- Auth ---------------- */
+    let mode = "signin";
+    function updateMode() {
+      $("authHeading").textContent = mode === "signin" ? "Sign in" : "Create account";
+      $("authSubmit").textContent = mode === "signin" ? "Sign in" : "Create account";
+      $("password").autocomplete = mode === "signin" ? "current-password" : "new-password";
+      $("toggleMode").textContent = mode === "signin" ? "Need an account? Create one" : "Have an account? Sign in";
+    }
+    $("toggleMode").addEventListener("click", () => {
+      mode = mode === "signin" ? "signup" : "signin";
+      $("authMsg").textContent = "";
+      updateMode();
+    });
+
+    async function init() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { show("login"); return; }
+      $("userEmail").textContent = session.user.email;
+      const { data: isEmp } = await supabase.rpc("is_employee");
+      if (isEmp) {
+        show("dash");
+        loadPosts(); loadEvents(); loadTeam();
+      } else {
+        $("denyEmail").textContent = session.user.email;
+        show("deny");
+      }
+    }
+
+    $("authForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = $("email").value.trim();
+      const password = $("password").value;
+      const msg = $("authMsg");
+      msg.textContent = "";
+      $("authSubmit").disabled = true;
+      try {
+        if (mode === "signin") {
+          const { error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          await init();
+        } else {
+          const { error } = await supabase.auth.signUp({ email, password });
+          if (error) throw error;
+          msg.textContent = "Account created. If prompted, confirm via the email we sent, then sign in.";
+          mode = "signin"; updateMode();
+        }
+      } catch (err) {
+        msg.textContent = err.message || "Something went wrong.";
+      } finally {
+        $("authSubmit").disabled = false;
+      }
+    });
+
+    async function logout() { await supabase.auth.signOut(); location.reload(); }
+    $("logoutBtn").addEventListener("click", logout);
+    $("denyLogout").addEventListener("click", logout);
+
+    /* ---------------- Tabs ---------------- */
+    document.querySelectorAll(".portal-tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".portal-tab").forEach((x) => x.classList.remove("is-active"));
+        tab.classList.add("is-active");
+        ["posts", "events", "team"].forEach((n) => ($("panel-" + n).hidden = n !== tab.dataset.tab));
+      });
+    });
+
+    /* ---------------- Shared list row ---------------- */
+    function itemRow(title, meta, onEdit, onDelete) {
+      const row = document.createElement("div");
+      row.className = "portal-item";
+      const info = document.createElement("div");
+      const t = document.createElement("div"); t.className = "portal-item-title"; t.textContent = title;
+      const m = document.createElement("div"); m.className = "portal-item-meta"; m.textContent = meta;
+      info.append(t, m);
+      const actions = document.createElement("div"); actions.className = "portal-item-actions";
+      if (onEdit) { const b = document.createElement("button"); b.type = "button"; b.className = "portal-mini"; b.textContent = "Edit"; b.onclick = onEdit; actions.append(b); }
+      if (onDelete) { const b = document.createElement("button"); b.type = "button"; b.className = "portal-mini portal-mini--danger"; b.textContent = "Delete"; b.onclick = onDelete; actions.append(b); }
+      row.append(info, actions);
+      return row;
+    }
+
+    /* ---------------- Posts ---------------- */
+    const postForm = $("postForm");
+    async function loadPosts() {
+      const { data, error } = await supabase.from("posts").select("*").order("published_at", { ascending: false });
+      const list = $("postList"); list.innerHTML = "";
+      if (error) { list.textContent = error.message; return; }
+      if (!data.length) { list.innerHTML = '<p class="portal-empty">No posts yet.</p>'; return; }
+      data.forEach((p) => list.append(itemRow(
+        p.title,
+        p.category + (p.published ? "" : " · draft"),
+        () => editPost(p),
+        () => delPost(p.id)
+      )));
+    }
+    function resetPostForm() {
+      postForm.reset(); $("p_id").value = ""; $("p_published").checked = true;
+      $("postFormTitle").textContent = "New press release / insight";
+      $("postSubmit").textContent = "Publish";
+    }
+    function editPost(p) {
+      $("p_id").value = p.id; $("p_title").value = p.title || ""; $("p_category").value = p.category || "Press Release";
+      $("p_summary").value = p.summary || ""; $("p_link").value = p.link || ""; $("p_published").checked = !!p.published;
+      $("postFormTitle").textContent = "Edit post"; $("postSubmit").textContent = "Save changes";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    async function delPost(id) {
+      if (!confirm("Delete this post?")) return;
+      const { error } = await supabase.from("posts").delete().eq("id", id);
+      if (error) return alert(error.message);
+      loadPosts();
+    }
+    postForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const row = {
+        title: $("p_title").value.trim(),
+        category: $("p_category").value,
+        summary: $("p_summary").value.trim(),
+        link: $("p_link").value.trim() || null,
+        published: $("p_published").checked,
+      };
+      const id = $("p_id").value;
+      const res = id
+        ? await supabase.from("posts").update(row).eq("id", id)
+        : await supabase.from("posts").insert(row);
+      const msg = $("postMsg");
+      if (res.error) { msg.textContent = res.error.message; return; }
+      msg.textContent = id ? "Saved." : "Published.";
+      resetPostForm(); loadPosts();
+      setTimeout(() => (msg.textContent = ""), 2500);
+    });
+    $("postCancel").addEventListener("click", resetPostForm);
+
+    /* ---------------- Events ---------------- */
+    const eventForm = $("eventForm");
+    async function loadEvents() {
+      const { data, error } = await supabase.from("events").select("*").order("start_date", { ascending: true });
+      const list = $("eventList"); list.innerHTML = "";
+      if (error) { list.textContent = error.message; return; }
+      if (!data.length) { list.innerHTML = '<p class="portal-empty">No events yet.</p>'; return; }
+      data.forEach((ev) => list.append(itemRow(
+        ev.title,
+        formatEventDate(ev.start_date, ev.end_date) + (ev.location ? " · " + ev.location : "") + (ev.published ? "" : " · draft"),
+        () => editEvent(ev),
+        () => delEvent(ev.id)
+      )));
+    }
+    function resetEventForm() {
+      eventForm.reset(); $("e_id").value = ""; $("e_published").checked = true;
+      $("eventFormTitle").textContent = "New event"; $("eventSubmit").textContent = "Publish";
+    }
+    function editEvent(ev) {
+      $("e_id").value = ev.id; $("e_title").value = ev.title || ""; $("e_type").value = ev.event_type || "";
+      $("e_start").value = ev.start_date || ""; $("e_end").value = ev.end_date || "";
+      $("e_location").value = ev.location || ""; $("e_desc").value = ev.description || ""; $("e_url").value = ev.register_url || "";
+      $("e_published").checked = !!ev.published;
+      $("eventFormTitle").textContent = "Edit event"; $("eventSubmit").textContent = "Save changes";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    async function delEvent(id) {
+      if (!confirm("Delete this event?")) return;
+      const { error } = await supabase.from("events").delete().eq("id", id);
+      if (error) return alert(error.message);
+      loadEvents();
+    }
+    eventForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const row = {
+        title: $("e_title").value.trim(),
+        event_type: $("e_type").value.trim() || "Event",
+        start_date: $("e_start").value,
+        end_date: $("e_end").value || null,
+        location: $("e_location").value.trim() || null,
+        description: $("e_desc").value.trim() || null,
+        register_url: $("e_url").value.trim() || null,
+        published: $("e_published").checked,
+      };
+      const id = $("e_id").value;
+      const res = id
+        ? await supabase.from("events").update(row).eq("id", id)
+        : await supabase.from("events").insert(row);
+      const msg = $("eventMsg");
+      if (res.error) { msg.textContent = res.error.message; return; }
+      msg.textContent = id ? "Saved." : "Published.";
+      resetEventForm(); loadEvents();
+      setTimeout(() => (msg.textContent = ""), 2500);
+    });
+    $("eventCancel").addEventListener("click", resetEventForm);
+
+    /* ---------------- Team ---------------- */
+    const teamForm = $("teamForm");
+    async function loadTeam() {
+      const { data, error } = await supabase.from("employees").select("*").order("created_at", { ascending: true });
+      const list = $("teamList"); list.innerHTML = "";
+      if (error) { list.textContent = error.message; return; }
+      data.forEach((emp) => list.append(itemRow(
+        emp.full_name || emp.email,
+        emp.full_name ? emp.email : "",
+        null,
+        () => delEmployee(emp.id, emp.email)
+      )));
+    }
+    async function delEmployee(id, email) {
+      if (!confirm("Remove " + email + " from the employee list? They will no longer be able to post.")) return;
+      const { error } = await supabase.from("employees").delete().eq("id", id);
+      if (error) return alert(error.message);
+      loadTeam();
+    }
+    teamForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const row = { email: $("t_email").value.trim().toLowerCase(), full_name: $("t_name").value.trim() || null };
+      const { error } = await supabase.from("employees").insert(row);
+      const msg = $("teamMsg");
+      if (error) { msg.textContent = error.message; return; }
+      msg.textContent = "Added.";
+      teamForm.reset(); loadTeam();
+      setTimeout(() => (msg.textContent = ""), 2500);
+    });
+
+    updateMode();
+    (async () => {
+      try {
+        const mod = await import("../assets/supabase.js");
+        supabase = mod.supabase;
+        formatEventDate = mod.formatEventDate;
+      } catch (e) {
+        show("login");
+        $("authMsg").textContent =
+          "Couldn't reach the portal service. Check your connection and refresh.";
+        return;
+      }
+      init();
+    })();
+  </script>
+</body>
+</html>
