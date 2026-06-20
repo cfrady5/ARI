@@ -556,8 +556,8 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 168px;
-  padding: 1.5rem;
+  min-height: 184px;
+  padding: 1.25rem 1.5rem;
   /* grey placeholder box; --card-bg (set inline) becomes the photo once
      an image is dropped into assets/initiative-assets/ */
   background-color: #232826;
@@ -568,15 +568,15 @@ a {
   border-bottom: 1px solid var(--card-border);
 }
 .init-logo-img {
-  max-height: 50px;
-  max-width: 72%;
+  max-height: 120px;
+  max-width: 88%;
   object-fit: contain;
   filter: brightness(0) invert(1);
   position: relative;
   z-index: 1;
 }
 .init-logo-img--ari {
-  max-height: 38px;
+  max-height: 96px;
   filter: none;
 }
 .init-body {
