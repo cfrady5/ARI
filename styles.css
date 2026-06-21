@@ -2726,3 +2726,33 @@ a {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ============ Contact form: honeypot + error ============ */
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.form-error {
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  background: rgba(255, 80, 80, 0.1);
+  border: 1px solid rgba(255, 120, 120, 0.35);
+  color: #ffb3b3;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.form-error[hidden] { display: none; }
+
+/* ============ Portal: contact messages ============ */
+.portal-message { align-items: flex-start; }
+.portal-message-info { flex: 1; min-width: 0; }
+.portal-message-body {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  white-space: pre-line;
+}

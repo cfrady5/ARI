@@ -301,23 +301,62 @@
     });
   }
 
-  /* ---------- Contact form (client-side confirmation) ---------- */
+  /* ---------- Contact form (submits to the send-contact Edge Function) ---------- */
   function initContactForm() {
     var form = document.getElementById("contactForm");
     var confirmation = document.getElementById("formConfirmation");
     if (!form || !confirmation) return;
+    var ENDPOINT = "https://xpelcuegqtpvojnjetkt.supabase.co/functions/v1/send-contact";
+    var APIKEY = "sb_publishable_ikPGzv-l0gnyKIrPSYnkjA_74v54gC3";
+    var errorBox = document.getElementById("formError");
+    var submitBtn = form.querySelector('button[type="submit"]');
+    var submitLabel = submitBtn ? submitBtn.innerHTML : "";
+
+    function val(n) { var el = form.elements[n]; return el ? String(el.value).trim() : ""; }
+    function showError(msg) {
+      if (errorBox) { errorBox.textContent = msg; errorBox.hidden = false; }
+      else window.alert(msg);
+    }
+
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       if (!form.reportValidity()) return;
-      // TODO: wire to a real endpoint (Formspree / Wix CRM webhook / serverless).
-      form.querySelectorAll("input, select, textarea, button").forEach(function (el) {
-        el.disabled = true;
-      });
-      confirmation.hidden = false;
-      confirmation.scrollIntoView({
-        behavior: reduceMotion ? "auto" : "smooth",
-        block: "nearest",
-      });
+      if (errorBox) errorBox.hidden = true;
+
+      var payload = {
+        name: val("name"),
+        email: val("email"),
+        organization: val("organization"),
+        role: val("role"),
+        inquiry: val("inquiry"),
+        message: val("message"),
+        company_website: val("company_website") // honeypot
+      };
+
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Sending…"; }
+
+      fetch(ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": APIKEY,
+          "Authorization": "Bearer " + APIKEY
+        },
+        body: JSON.stringify(payload)
+      })
+        .then(function (r) {
+          return r.json().catch(function () { return {}; }).then(function (d) { return { ok: r.ok, data: d }; });
+        })
+        .then(function (res) {
+          if (!res.ok) throw new Error((res.data && res.data.error) || "Something went wrong.");
+          form.querySelectorAll("input, select, textarea, button").forEach(function (el) { el.disabled = true; });
+          confirmation.hidden = false;
+          confirmation.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
+        })
+        .catch(function (err) {
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = submitLabel; }
+          showError((err && err.message) || "We couldn't send your message. Please try again, or email us directly.");
+        });
     });
   }
 

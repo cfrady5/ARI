@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../styles.css?v=79" />
+  <link rel="stylesheet" href="../styles.css?v=80" />
 </head>
 <body class="portal-body">
   <div class="wave-wrap" aria-hidden="true"><canvas id="heroWave"></canvas><div class="wave-fade"></div></div>
@@ -51,6 +51,7 @@
       <nav class="portal-tabs" aria-label="Portal sections">
         <button class="portal-tab is-active" type="button" data-tab="posts">Press &amp; Insights</button>
         <button class="portal-tab" type="button" data-tab="events">Events</button>
+        <button class="portal-tab" type="button" data-tab="messages">Messages</button>
         <button class="portal-tab" type="button" data-tab="team">Team</button>
       </nav>
 
@@ -209,6 +210,13 @@
         <div class="portal-list" id="eventList"></div>
       </div>
 
+      <!-- Messages (contact form submissions) -->
+      <div class="portal-panel" id="panel-messages" hidden>
+        <h2 class="portal-form-title">Contact form messages</h2>
+        <p class="portal-sub">Submissions from the public contact form. These are also emailed to the team.</p>
+        <div class="portal-list" id="messageList"></div>
+      </div>
+
       <!-- Team -->
       <div class="portal-panel" id="panel-team" hidden>
         <form class="portal-form" id="teamForm">
@@ -254,7 +262,7 @@
     </div>
   </div>
 
-  <script src="../script.js?v=79"></script>
+  <script src="../script.js?v=80"></script>
   <script type="module">
     const $ = (id) => document.getElementById(id);
     let supabase, formatEventDate;
@@ -287,7 +295,7 @@
       const { data: isEmp } = await supabase.rpc("is_employee");
       if (isEmp) {
         show("dash");
-        loadPosts(); loadEvents(); loadTeam();
+        loadPosts(); loadEvents(); loadMessages(); loadTeam();
       } else {
         $("denyEmail").textContent = session.user.email;
         show("deny");
@@ -328,7 +336,7 @@
       tab.addEventListener("click", () => {
         document.querySelectorAll(".portal-tab").forEach((x) => x.classList.remove("is-active"));
         tab.classList.add("is-active");
-        ["posts", "events", "team"].forEach((n) => ($("panel-" + n).hidden = n !== tab.dataset.tab));
+        ["posts", "events", "messages", "team"].forEach((n) => ($("panel-" + n).hidden = n !== tab.dataset.tab));
       });
     });
 
@@ -1035,6 +1043,39 @@
     if ($("eventPreviewCal")) $("eventPreviewCal").addEventListener("click", openCalPreview);
     if ($("calPrevPv")) $("calPrevPv").addEventListener("click", () => { pvCalDate = new Date(pvCalDate.getFullYear(), pvCalDate.getMonth() - 1, 1); renderPvCalendar(); });
     if ($("calNextPv")) $("calNextPv").addEventListener("click", () => { pvCalDate = new Date(pvCalDate.getFullYear(), pvCalDate.getMonth() + 1, 1); renderPvCalendar(); });
+
+    /* ---------------- Messages (contact submissions) ---------------- */
+    async function loadMessages() {
+      const list = $("messageList"); if (!list) return;
+      const { data, error } = await supabase.from("contact_messages").select("*").order("created_at", { ascending: false });
+      list.innerHTML = "";
+      if (error) { list.textContent = error.message; return; }
+      if (!data.length) { list.innerHTML = '<p class="portal-empty">No messages yet.</p>'; return; }
+      data.forEach((m) => {
+        const row = document.createElement("div"); row.className = "portal-item portal-message";
+        const info = document.createElement("div"); info.className = "portal-message-info";
+        const t = document.createElement("div"); t.className = "portal-item-title"; t.textContent = m.name + (m.email ? " · " + m.email : "");
+        const meta = document.createElement("div"); meta.className = "portal-item-meta";
+        const when = m.created_at ? new Date(m.created_at).toLocaleString() : "";
+        meta.textContent = [m.inquiry, m.organization, when].filter(Boolean).join(" · ");
+        const body = document.createElement("p"); body.className = "portal-message-body"; body.textContent = m.message || "";
+        info.append(t, meta, body);
+        const actions = document.createElement("div"); actions.className = "portal-item-actions";
+        const reply = document.createElement("a"); reply.className = "portal-mini";
+        reply.textContent = "Reply"; reply.href = "mailto:" + encodeURIComponent(m.email) + "?subject=" + encodeURIComponent("Re: your message to ARI");
+        actions.append(reply);
+        const del = document.createElement("button"); del.type = "button"; del.className = "portal-mini portal-mini--danger"; del.textContent = "Delete";
+        del.onclick = async () => {
+          if (!confirm("Delete this message?")) return;
+          const { error } = await supabase.from("contact_messages").delete().eq("id", m.id);
+          if (error) return alert(error.message);
+          loadMessages();
+        };
+        actions.append(del);
+        row.append(info, actions);
+        list.append(row);
+      });
+    }
 
     /* ---------------- Team ---------------- */
     const teamForm = $("teamForm");
