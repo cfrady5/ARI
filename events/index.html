@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../styles.css?v=80" />
+  <link rel="stylesheet" href="../styles.css?v=81" />
 </head>
 <body>
   <header class="site-header" id="siteHeader">
@@ -86,7 +86,7 @@
             </div>
             <div class="calendar-toolbar"><button type="button" class="calendar-today" id="calToday">Today</button></div>
             <div class="calendar-grid" id="calendarGrid"></div>
-            <p class="calendar-helper">Green dots mark days with scheduled events. Select a day to filter the list.</p>
+            <p class="calendar-helper">Dots mark single-day events; bars span multi-day events. Select a day to see what's on.</p>
           </div>
         </div>
       </div>
@@ -132,7 +132,7 @@
     </div>
     <div class="footer-bottom"><div class="footer-bottom-inner"><p>&copy; <span id="year"></span> Applied Research Institute. All rights reserved.</p><div class="footer-legal"><a href="../privacy/">Privacy</a><a href="../terms/">Terms</a><a href="../accessibility/">Accessibility</a></div></div></div>
   </footer>
-  <script src="../script.js?v=80"></script>
+  <script src="../script.js?v=81"></script>
   <script type="module">
     import { supabase, formatEventDate } from "../assets/supabase.js";
 
@@ -208,6 +208,50 @@
 
     function getEventsForDate(dateKey) {
       return sortEvents(allEvents.filter((ev) => eventCoversDate(ev, dateKey)));
+    }
+
+    // An event is multi-day only when end_date exists and falls after start_date.
+    function isMultiDay(ev) {
+      const s = parseLocalDate(ev.start_date);
+      const e = parseLocalDate(ev.end_date);
+      return !!(s && e && e > s);
+    }
+
+    // Assign each multi-day event a horizontal "lane" so overlapping ranges
+    // never collide and each event keeps the same lane across all its days.
+    function computeEventLanes() {
+      const multi = allEvents
+        .filter(isMultiDay)
+        .map((ev) => ({ ev, start: parseLocalDate(ev.start_date), end: parseLocalDate(ev.end_date) }))
+        .filter((x) => x.start && x.end)
+        .sort((a, b) => (a.start - b.start) || (a.end - b.end));
+      const laneEnds = [];
+      multi.forEach((item) => {
+        let lane = 0;
+        while (lane < laneEnds.length && laneEnds[lane] >= item.start) lane++;
+        item.lane = lane;
+        laneEnds[lane] = item.end;
+      });
+      return multi;
+    }
+
+    // Build a thin range-bar segment for a multi-day event within one day cell.
+    // Rounds only the true start/end; bridges the grid gap mid-range; breaks
+    // cleanly at week and month boundaries.
+    function buildRangeSegment(item, dateObj, dow, day, daysInMonth) {
+      const key = toDateKey(dateObj);
+      const isStart = key === toDateKey(item.start);
+      const isEnd = key === toDateKey(item.end);
+      const connectsLeft = dateObj > item.start && dow !== 0 && day > 1;
+      const connectsRight = dateObj < item.end && dow !== 6 && day < daysInMonth;
+      const el = document.createElement("span");
+      el.className = "calendar-range";
+      el.style.borderTopLeftRadius = el.style.borderBottomLeftRadius = isStart ? "6px" : "0";
+      el.style.borderTopRightRadius = el.style.borderBottomRightRadius = isEnd ? "6px" : "0";
+      el.style.left = connectsLeft ? "-5px" : (isStart ? "5px" : "0");
+      el.style.right = connectsRight ? "-5px" : (isEnd ? "5px" : "0");
+      el.style.bottom = (11 + Math.min(item.lane, 2) * 6) + "px";
+      return el;
     }
 
     function matchesFilter(ev, filter) {
@@ -401,11 +445,14 @@
         grid.append(empty);
       }
 
+      const laneItems = computeEventLanes();
       const todayKey = toDateKey(new Date());
       for (let day = 1; day <= daysInMonth; day++) {
         const dateObj = new Date(year, month, day);
+        const dow = dateObj.getDay();
         const key = toDateKey(dateObj);
-        const dayEvents = getEventsForDate(key);
+        const ranges = laneItems.filter((it) => dateObj >= it.start && dateObj <= it.end);
+        const singles = allEvents.filter((ev) => !isMultiDay(ev) && toDateKey(ev.start_date) === key);
 
         const btn = document.createElement("button");
         btn.type = "button";
@@ -413,17 +460,21 @@
         btn.setAttribute("aria-label", `View events for ${formatReadableDate(dateObj)}`);
         if (key === todayKey) btn.classList.add("is-today");
         if (selectedDate && key === selectedDate) btn.classList.add("is-selected");
-        if (dayEvents.length) btn.classList.add("has-event");
+        if (ranges.length || singles.length) btn.classList.add("has-event");
 
         const num = document.createElement("span");
         num.className = "calendar-day-number";
         num.textContent = String(day);
         btn.append(num);
 
-        if (dayEvents.length) {
+        // Multi-day events: thin range bars (stacked above the dots).
+        ranges.forEach((item) => btn.append(buildRangeSegment(item, dateObj, dow, day, daysInMonth)));
+
+        // Single-day events: small green dots, below any range bars.
+        if (singles.length) {
           const dots = document.createElement("span");
           dots.className = "calendar-event-dots";
-          const dotCount = Math.min(dayEvents.length, 4);
+          const dotCount = Math.min(singles.length, 4);
           for (let d = 0; d < dotCount; d++) {
             const dot = document.createElement("span");
             dot.className = "calendar-dot";

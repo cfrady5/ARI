@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../styles.css?v=80" />
+  <link rel="stylesheet" href="../styles.css?v=81" />
 </head>
 <body class="portal-body">
   <div class="wave-wrap" aria-hidden="true"><canvas id="heroWave"></canvas><div class="wave-fade"></div></div>
@@ -262,7 +262,7 @@
     </div>
   </div>
 
-  <script src="../script.js?v=80"></script>
+  <script src="../script.js?v=81"></script>
   <script type="module">
     const $ = (id) => document.getElementById(id);
     let supabase, formatEventDate;
@@ -994,6 +994,31 @@
       const k = pvParse(key); if (!k) return [];
       return pvEventList().filter((e) => { const a = pvParse(e.start); if (!a) return false; const b = pvParse(e.end) || a; return k >= a && k <= b; });
     }
+    function pvIsMulti(e) { const s = pvParse(e.start), en = pvParse(e.end); return !!(s && en && en > s); }
+    function pvLanes() {
+      const multi = pvEventList().filter(pvIsMulti)
+        .map((e) => ({ e, start: pvParse(e.start), end: pvParse(e.end) }))
+        .filter((x) => x.start && x.end)
+        .sort((a, b) => (a.start - b.start) || (a.end - b.end));
+      const ends = [];
+      multi.forEach((it) => { let l = 0; while (l < ends.length && ends[l] >= it.start) l++; it.lane = l; ends[l] = it.end; });
+      return multi;
+    }
+    function pvRangeSeg(item, dateObj, dow, day, daysInMonth) {
+      const key = pvKey(dateObj);
+      const isStart = key === pvKey(item.start);
+      const isEnd = key === pvKey(item.end);
+      const connectsLeft = dateObj > item.start && dow !== 0 && day > 1;
+      const connectsRight = dateObj < item.end && dow !== 6 && day < daysInMonth;
+      const el = document.createElement("span");
+      el.className = "calendar-range";
+      el.style.borderTopLeftRadius = el.style.borderBottomLeftRadius = isStart ? "6px" : "0";
+      el.style.borderTopRightRadius = el.style.borderBottomRightRadius = isEnd ? "6px" : "0";
+      el.style.left = connectsLeft ? "-5px" : (isStart ? "5px" : "0");
+      el.style.right = connectsRight ? "-5px" : (isEnd ? "5px" : "0");
+      el.style.bottom = (11 + Math.min(item.lane, 2) * 6) + "px";
+      return el;
+    }
     function renderPvDetail(key) {
       const wrap = $("calDetailPv"); wrap.innerHTML = "";
       const d = pvParse(key);
@@ -1018,14 +1043,18 @@
       ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].forEach((n) => { const s = document.createElement("span"); s.className = "calendar-day-name"; s.textContent = n; grid.append(s); });
       const first = new Date(y, mo, 1).getDay(), days = new Date(y, mo + 1, 0).getDate();
       for (let i = 0; i < first; i++) { const e = document.createElement("span"); e.className = "calendar-day-empty"; grid.append(e); }
+      const laneItems = pvLanes();
       const todayKey = pvKey(new Date());
       for (let dn = 1; dn <= days; dn++) {
-        const dateObj = new Date(y, mo, dn), key = pvKey(dateObj), evs = pvForDay(key);
+        const dateObj = new Date(y, mo, dn), dow = dateObj.getDay(), key = pvKey(dateObj);
+        const ranges = laneItems.filter((it) => dateObj >= it.start && dateObj <= it.end);
+        const singles = pvEventList().filter((e) => !pvIsMulti(e) && pvKey(pvParse(e.start)) === key);
         const btn = document.createElement("button"); btn.type = "button"; btn.className = "calendar-day";
         if (key === todayKey) btn.classList.add("is-today");
-        if (evs.length) btn.classList.add("has-event");
+        if (ranges.length || singles.length) btn.classList.add("has-event");
         const num = document.createElement("span"); num.className = "calendar-day-number"; num.textContent = String(dn); btn.append(num);
-        if (evs.length) { const dots = document.createElement("span"); dots.className = "calendar-event-dots"; for (let i = 0; i < Math.min(evs.length, 4); i++) { const dot = document.createElement("span"); dot.className = "calendar-dot"; dots.append(dot); } btn.append(dots); }
+        ranges.forEach((it) => btn.append(pvRangeSeg(it, dateObj, dow, dn, days)));
+        if (singles.length) { const dots = document.createElement("span"); dots.className = "calendar-event-dots"; for (let i = 0; i < Math.min(singles.length, 4); i++) { const dot = document.createElement("span"); dot.className = "calendar-dot"; dots.append(dot); } btn.append(dots); }
         btn.addEventListener("click", () => renderPvDetail(key));
         grid.append(btn);
       }

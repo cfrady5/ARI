@@ -2403,8 +2403,9 @@ a {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 3px;
+  justify-content: flex-start;
+  padding-top: 6px;
+  overflow: visible;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid transparent;
   border-radius: 10px;
@@ -2414,15 +2415,19 @@ a {
   transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 .calendar-day:hover { background: rgba(59, 174, 72, 0.1); color: var(--white); }
-.calendar-day-number { font-size: 0.9rem; font-weight: 600; line-height: 1; }
+.calendar-day-number { position: relative; z-index: 3; font-size: 0.9rem; font-weight: 600; line-height: 1; }
 .calendar-day.has-event { color: var(--white); }
 .calendar-day.is-today { border-color: var(--border-green); }
 .calendar-day.is-today .calendar-day-number { color: var(--green); }
 .calendar-day.is-selected { background: var(--green); border-color: var(--green); }
 .calendar-day.is-selected .calendar-day-number { color: #04210c; }
-.calendar-event-dots { display: flex; gap: 3px; height: 5px; }
+/* Single-day events: dots pinned to the bottom of the cell. */
+.calendar-event-dots { position: absolute; left: 0; right: 0; bottom: 4px; display: flex; justify-content: center; gap: 3px; height: 5px; z-index: 2; }
 .calendar-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
 .calendar-day.is-selected .calendar-dot { background: #04210c; }
+/* Multi-day events: thin range bars stacked above the dots, bridging cells. */
+.calendar-range { position: absolute; height: 4px; background: var(--green); z-index: 2; pointer-events: none; }
+.calendar-day.is-selected .calendar-range { background: #04210c; }
 .calendar-helper {
   margin-top: 1rem;
   font-size: 0.78rem;
