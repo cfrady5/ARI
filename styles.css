@@ -1445,11 +1445,10 @@ a {
    See the "Hero wave — fully generated green dot-flow" block in script.js. */
 
 /* =========================================================================
-   Homepage sections — Why ARI Works (pinned stage) + Mission Impact
-   On desktop the header + card deck pin together as a single stage and
-   scroll progress reveals the cards one by one (see initCardStack in
-   script.js). Once the last card is shown, scrolling past releases the whole
-   stage as one block. Narrow screens / reduced-motion get a plain column.
+   Homepage section — Why ARI Works
+   A responsive card deck: a single column on narrow screens and a two-column
+   grid from 801px up. Cards reveal with the standard on-scroll fade; no scroll
+   pinning or hijacking.
    ========================================================================= */
 .ari-difference-section {
   padding: clamp(72px, 8vw, 110px) clamp(24px, 6vw, 88px);
@@ -1460,21 +1459,11 @@ a {
   max-width: 1180px;
   margin: 0 auto;
 }
-.ari-difference-header h2,
-.mission-impact-head h2 {
+.ari-difference-header h2 {
   font-size: clamp(2rem, 4.6vw, 3rem);
   font-weight: 800;
   letter-spacing: -0.03em;
   margin: 0.6rem 0 1rem;
-}
-.mission-impact-head {
-  max-width: 64ch;
-  margin: 0 auto;
-  text-align: center;
-}
-.mission-impact-head .section-body {
-  margin-left: auto;
-  margin-right: auto;
 }
 
 /* ---- Why ARI Works : base = plain stacked column (mobile / reduced-motion) ---- */
@@ -1589,153 +1578,10 @@ a {
   stroke-width: 2;
 }
 
-/* ---- Why ARI Works : pinned stage (desktop + motion) ---- */
-@media (min-width: 801px) and (prefers-reduced-motion: no-preference) {
-  .ari-diff-scroll {
-    position: relative;
-    height: 220vh;
-  }
-  .ari-diff-sticky {
-    position: sticky;
-    top: var(--header-h);
-    height: calc(100vh - var(--header-h));
-    display: flex;
-    align-items: center;
-  }
-  .ari-diff-sticky .ari-difference-inner {
-    width: 100%;
-  }
-  .ari-difference-header {
-    margin-bottom: clamp(20px, 3vh, 36px);
-  }
+/* ---- Why ARI Works : two-column deck on wider screens ---- */
+@media (min-width: 801px) {
   .ari-card-stack {
-    position: relative;
-    display: block;
-    height: clamp(320px, 50vh, 430px);
-    max-width: 940px;
-  }
-  .ari-stack-card {
-    position: absolute;
-    inset: 0;
-    min-height: 0;
-    will-change: transform, opacity;
-    transition: box-shadow 0.45s var(--reveal-ease);
-  }
-  .ari-stack-card.is-active {
-    border-color: rgba(59, 174, 72, 0.6);
-    box-shadow: 0 28px 90px rgba(0, 0, 0, 0.5),
-      0 0 0 1px rgba(59, 174, 72, 0.3), 0 0 48px rgba(59, 174, 72, 0.2);
-  }
-}
-
-/* ---- Mission Impact : data-dashboard panel ---- */
-.mission-impact-panel {
-  position: relative;
-  overflow: hidden;
-  margin-top: clamp(2rem, 4vw, 3rem);
-  border-radius: 26px;
-  border: 1px solid var(--border-green);
-  background: linear-gradient(180deg, rgba(31, 54, 85, 0.2), rgba(5, 8, 7, 0.6));
-  padding: clamp(1.75rem, 4vw, 3rem);
-}
-.mission-impact-panel::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(59, 174, 72, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59, 174, 72, 0.06) 1px, transparent 1px);
-  background-size: 46px 46px;
-  -webkit-mask-image: radial-gradient(120% 100% at 50% 0%, #000 40%, transparent 85%);
-  mask-image: radial-gradient(120% 100% at 50% 0%, #000 40%, transparent 85%);
-  pointer-events: none;
-}
-.mi-grid {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-}
-.mi-stat {
-  padding: 0.5rem clamp(1rem, 2.2vw, 1.75rem);
-  text-align: center;
-}
-.mi-stat + .mi-stat {
-  border-left: 1px solid var(--border-soft);
-}
-.mi-icon {
-  display: inline-flex;
-  width: 44px;
-  height: 44px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  border: 1px solid var(--border-green);
-  background: rgba(59, 174, 72, 0.07);
-  color: var(--green);
-  margin-bottom: 1rem;
-}
-.mi-icon svg {
-  width: 22px;
-  height: 22px;
-}
-.mi-value {
-  display: block;
-  font-size: clamp(2.25rem, 4.5vw, 3.1rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  color: var(--green);
-  font-variant-numeric: tabular-nums;
-}
-.mi-label {
-  display: block;
-  margin-top: 0.5rem;
-  font-weight: 600;
-  color: var(--white);
-}
-.mi-desc {
-  margin-top: 0.6rem;
-  color: var(--muted);
-  font-size: 0.88rem;
-}
-.mi-cta {
-  position: relative;
-  z-index: 1;
-  margin-top: clamp(1.75rem, 4vw, 2.5rem);
-  text-align: center;
-}
-
-/* Mission Impact — tablet (2x2) */
-@media (max-width: 900px) {
-  .mi-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .mi-stat + .mi-stat {
-    border-left: none;
-  }
-  .mi-stat:nth-child(even) {
-    border-left: 1px solid var(--border-soft);
-  }
-  .mi-stat:nth-child(n + 3) {
-    border-top: 1px solid var(--border-soft);
-    margin-top: 0.5rem;
-    padding-top: 1.5rem;
-  }
-}
-
-/* Mission Impact — mobile (single column) */
-@media (max-width: 560px) {
-  .mi-grid {
-    grid-template-columns: 1fr;
-  }
-  .mi-stat {
-    border-left: none !important;
-  }
-  .mi-stat + .mi-stat {
-    border-top: 1px solid var(--border-soft);
-    margin-top: 0.5rem;
-    padding-top: 1.5rem;
   }
 }
 
