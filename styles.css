@@ -1481,101 +1481,53 @@ a {
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  min-height: 280px;
-  padding: clamp(28px, 4vw, 48px);
-  border: 1px solid rgba(59, 174, 72, 0.5);
-  border-radius: 24px;
-  background-color: #060a09;
-  background-image:
-    radial-gradient(circle at 86% 28%, rgba(59, 174, 72, 0.12), transparent 26%),
-    linear-gradient(145deg, rgba(59, 174, 72, 0.08), rgba(255, 255, 255, 0.025));
-  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.5), 0 0 40px rgba(59, 174, 72, 0.12);
-  overflow: hidden;
+  align-items: flex-start;
+  padding: clamp(1.75rem, 3.2vw, 2.6rem);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(31, 54, 85, 0.18), rgba(5, 8, 7, 0.62));
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
-
-/* ---- shared card interior (number, icon, motif, copy, wave) ---- */
-.diff-content {
-  position: relative;
-  z-index: 2;
-  max-width: 46ch;
-}
-.ari-stack-card h3 {
-  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
-  margin-bottom: 0.6rem;
-}
-.ari-stack-card p {
-  color: var(--muted);
-  font-size: 1rem;
-  max-width: 48ch;
-}
-.diff-num {
-  position: absolute;
-  top: clamp(1.25rem, 2.5vw, 2rem);
-  left: clamp(1.5rem, 3vw, 2.75rem);
-  z-index: 2;
-  font-size: clamp(2.5rem, 6vw, 4rem);
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  color: rgba(59, 174, 72, 0.16);
-  -webkit-text-stroke: 1px rgba(59, 174, 72, 0.55);
+.ari-stack-card:hover {
+  border-color: var(--border-green);
+  transform: translateY(-3px);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(59, 174, 72, 0.18);
 }
 .diff-icon {
-  position: absolute;
-  top: clamp(1.25rem, 2.5vw, 2rem);
-  right: clamp(1.5rem, 3vw, 2.75rem);
-  z-index: 2;
   display: inline-flex;
-  width: 52px;
-  height: 52px;
+  width: 50px;
+  height: 50px;
   align-items: center;
   justify-content: center;
   border-radius: 14px;
   border: 1px solid var(--border-green);
   background: rgba(59, 174, 72, 0.08);
   color: var(--green);
+  margin-bottom: 1.4rem;
 }
 .diff-icon svg {
-  width: 26px;
-  height: 26px;
+  width: 25px;
+  height: 25px;
 }
-.diff-motif {
-  position: absolute;
-  right: -6%;
-  top: 50%;
-  width: 60%;
-  max-width: 360px;
-  transform: translateY(-50%);
+.diff-step {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--green);
-  opacity: 0.08;
-  z-index: 1;
-  pointer-events: none;
+  margin-bottom: 0.5rem;
 }
-.diff-motif svg {
-  width: 100%;
-  height: auto;
-  display: block;
+.ari-stack-card h3 {
+  font-size: clamp(1.3rem, 2.2vw, 1.7rem);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.6rem;
 }
-.diff-motif--grid {
-  opacity: 0.05;
-}
-.diff-wave {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 48px;
-  color: var(--green);
-  opacity: 0.2;
-  z-index: 1;
-  pointer-events: none;
-}
-.diff-wave path {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
+.ari-stack-card p {
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 46ch;
 }
 
 /* ---- Why ARI Works : two-column deck on wider screens ---- */
