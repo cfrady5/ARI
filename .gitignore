@@ -17,3 +17,10 @@ node_modules
 # local dev helpers
 _*.cjs
 _*.mjs
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
