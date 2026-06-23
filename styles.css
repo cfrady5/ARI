@@ -471,6 +471,11 @@ a {
   max-height: 54px;
   max-width: 240px;
 }
+/* OnRamp mark reads small at the shared cap — give it a larger ceiling. */
+.logo-item img[src*="onramp"] {
+  max-height: 90px;
+  max-width: 300px;
+}
 /* RAM wordmark reads small at the shared cap — give it a larger ceiling. */
 .logo-item span {
   white-space: nowrap;
@@ -1437,6 +1442,7 @@ a {
   .logo-item { min-width: 220px; padding: 0 2rem; }
   .logo-item img { max-height: 44px; }
   .logo-item img[src*="ram.png"] { max-height: 60px; }
+  .logo-item img[src*="onramp"] { max-height: 60px; }
   .logo-item span { font-size: 0.95rem; }
 }
 
