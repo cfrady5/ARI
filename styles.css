@@ -485,6 +485,24 @@ a {
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.92);
 }
+/* DevX Autonomy — typographic wordmark rendered in the site font (white) */
+.devx-mark {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+  line-height: 0.92;
+  color: #fff;
+  font-family: var(--font);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.devx-mark b { font-size: 1em; font-weight: 800; letter-spacing: 0.01em; }
+.devx-mark small { font-size: 0.36em; font-weight: 700; letter-spacing: 0.3em; margin-top: 0.34em; padding-left: 0.3em; }
+.logo-item .devx-mark { font-size: 2rem; }
+.init-media .devx-mark { font-size: clamp(2.4rem, 6vw, 3.1rem); }
 @keyframes logoScroll {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
@@ -1444,6 +1462,7 @@ a {
   .logo-item img[src*="ram.png"] { max-height: 60px; }
   .logo-item img[src*="onramp"] { max-height: 60px; }
   .logo-item span { font-size: 0.95rem; }
+  .logo-item .devx-mark { font-size: 1.4rem; }
 }
 
 /* The hero wave is generated entirely in code on <canvas id="heroWave"> — a
